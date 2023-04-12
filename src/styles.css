@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-slate-100 text-slate-900; }
+  input, textarea, select { @apply block w-full rounded border border-slate-400 bg-white px-3 py-2; }
+  button { @apply rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700; }
+  :focus-visible { @apply outline outline-2 outline-offset-2 outline-indigo-600; }
+  label { @apply block text-sm font-semibold; }
+}

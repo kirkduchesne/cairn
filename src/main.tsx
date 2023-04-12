@@ -1,3 +1,5 @@
 import { createRoot } from 'react-dom/client';
+import { App } from './App';
+import './styles.css';
 
-createRoot(document.getElementById('root')!).render(<main><h1>Issue Desk</h1><p>A small place to track work.</p></main>);
+createRoot(document.getElementById('root')!).render(<App />);
