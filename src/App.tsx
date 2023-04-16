@@ -31,6 +31,9 @@ export function App() {
         {issues.length === 0 && <p className="rounded-xl bg-white p-6">No issues yet. Add your first task to get started.</p>}
         {issues.map(issue => <article key={issue.id} className="space-y-3 rounded-xl bg-white p-6 shadow-sm">
           <h2 className="break-words text-xl font-semibold">{issue.title}</h2><p className="whitespace-pre-wrap break-words text-slate-600">{issue.notes}</p>
+          <label>Status for {issue.title}<select value={issue.status} onChange={event => setIssues(issues.map(item => item.id === issue.id ? { ...item, status: event.target.value as Issue['status'] } : item))}>
+            <option>Open</option><option>In progress</option><option>Done</option>
+          </select></label>
         </article>)}
       </section>
     </div>
