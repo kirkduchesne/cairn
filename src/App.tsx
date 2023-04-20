@@ -6,6 +6,9 @@ export function App() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
+  const [filter, setFilter] = useState('All');
+  const [query, setQuery] = useState('');
+  const visible = issues.filter(issue => (filter === 'All' || issue.status === filter) && (issue.title + ' ' + issue.notes).toLowerCase().includes(query.trim().toLowerCase()));
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
 
@@ -33,8 +36,11 @@ export function App() {
         {editing && <button type="button" onClick={() => { setEditing(null); setTitle(''); setNotes(''); setError(''); }}>Cancel editing</button>}
       </form>
       <section className="space-y-4" aria-label="Issues">
+        <div className="grid gap-3 sm:grid-cols-2"><label>Search issues<input value={query} onChange={event => setQuery(event.target.value)} /></label><label>Filter status<select value={filter} onChange={event => setFilter(event.target.value)}><option>All</option><option>Open</option><option>In progress</option><option>Done</option></select></label></div>
+        <p className="text-sm text-slate-600" aria-live="polite">{visible.length} of {issues.length} issues</p>
+        {issues.length > 0 && visible.length === 0 && <p>No issues match your filters.</p>}
         {issues.length === 0 && <p className="rounded-xl bg-white p-6">No issues yet. Add your first task to get started.</p>}
-        {issues.map(issue => <article key={issue.id} className="space-y-3 rounded-xl bg-white p-6 shadow-sm">
+        {visible.map(issue => <article key={issue.id} className="space-y-3 rounded-xl bg-white p-6 shadow-sm">
           <h2 className="break-words text-xl font-semibold">{issue.title}</h2><p className="whitespace-pre-wrap break-words text-slate-600">{issue.notes}</p>
           <label>Status for {issue.title}<select value={issue.status} onChange={event => setIssues(issues.map(item => item.id === issue.id ? { ...item, status: event.target.value as Issue['status'] } : item))}>
             <option>Open</option><option>In progress</option><option>Done</option>
