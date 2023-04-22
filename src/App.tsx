@@ -46,6 +46,11 @@ export function App() {
             <option>Open</option><option>In progress</option><option>Done</option>
           </select></label>
           <button type="button" onClick={() => { setEditing(issue.id); setTitle(issue.title); setNotes(issue.notes); setError(''); }}>Edit {issue.title}</button>
+          <button type="button" className="bg-red-700 hover:bg-red-800" onClick={() => {
+            if (!window.confirm('Delete this issue?')) return;
+            setIssues(issues.filter(item => item.id !== issue.id));
+            if (editing === issue.id) { setEditing(null); setTitle(''); setNotes(''); setError(''); }
+          }}>Delete {issue.title}</button>
         </article>)}
       </section>
     </div>
