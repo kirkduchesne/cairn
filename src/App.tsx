@@ -1,9 +1,20 @@
 import { FormEvent, useState } from 'react';
 
-type Issue = { id: string; title: string; notes: string; status: 'Open' | 'In progress' | 'Done' };
+import { Issue, loadIssues, storageKey } from './storage';
 
 export function App() {
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [initial] = useState(loadIssues);
+  const [issues, updateIssues] = useState<Issue[]>(initial.issues);
+  const [storageError, setStorageError] = useState(initial.error);
+
+  function setIssues(next: Issue[]) {
+    if (initial.error) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(next));
+      updateIssues(next);
+      setStorageError('');
+    } catch { setStorageError('Could not save changes. Free browser storage and try again.'); }
+  }
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [filter, setFilter] = useState('All');
@@ -26,7 +37,8 @@ export function App() {
 
   return <main className="mx-auto max-w-4xl px-4 py-10">
     <header className="mb-8"><p className="text-sm font-semibold uppercase tracking-widest text-indigo-700">Personal workspace</p><h1 className="mt-2 text-4xl font-bold">Issue Desk</h1><p className="mt-3 text-slate-600">Keep the next fix in sight.</p></header>
-    <div className="grid items-start gap-6 md:grid-cols-[280px_1fr]">
+    {storageError && <p role="alert" className="mb-4 rounded bg-red-100 p-4 text-red-900">{storageError}</p>}
+    <fieldset disabled={Boolean(initial.error)} className="grid items-start gap-6 md:grid-cols-[280px_1fr]">
       <form onSubmit={submit} className="space-y-4 rounded-xl bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold">{editing ? 'Edit issue' : 'New issue'}</h2>
         <label>Title<input value={title} onChange={event => setTitle(event.target.value)} maxLength={100} required /></label>
@@ -53,6 +65,6 @@ export function App() {
           }}>Delete {issue.title}</button>
         </article>)}
       </section>
-    </div>
+    </fieldset>
   </main>;
 }
