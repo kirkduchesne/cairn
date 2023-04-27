@@ -8,12 +8,13 @@ export function App() {
   const [storageError, setStorageError] = useState(initial.error);
 
   function setIssues(next: Issue[]) {
-    if (initial.error) return;
+    if (initial.error) return false;
     try {
       localStorage.setItem(storageKey, JSON.stringify(next));
       updateIssues(next);
       setStorageError('');
-    } catch { setStorageError('Could not save changes. Free browser storage and try again.'); }
+      return true;
+    } catch { setStorageError('Could not save changes. Free browser storage and try again.'); return false; }
   }
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
@@ -27,8 +28,8 @@ export function App() {
     event.preventDefault();
     if (!title.trim()) { setError('Enter an issue title.'); return; }
     if (editing) {
-      setIssues(issues.map(issue => issue.id === editing ? { ...issue, title: title.trim(), notes: notes.trim() } : issue));
-    } else setIssues([...issues, { id: Date.now().toString(36) + Math.random().toString(36).slice(2), title: title.trim(), notes: notes.trim(), status: 'Open' }]);
+      if (!setIssues(issues.map(issue => issue.id === editing ? { ...issue, title: title.trim(), notes: notes.trim() } : issue))) return;
+    } else if (!setIssues([...issues, { id: Date.now().toString(36) + Math.random().toString(36).slice(2), title: title.trim(), notes: notes.trim(), status: 'Open' }])) return;
     setEditing(null);
     setTitle('');
     setNotes('');
@@ -60,7 +61,7 @@ export function App() {
           <button type="button" onClick={() => { setEditing(issue.id); setTitle(issue.title); setNotes(issue.notes); setError(''); }}>Edit {issue.title}</button>
           <button type="button" className="bg-red-700 hover:bg-red-800" onClick={() => {
             if (!window.confirm('Delete this issue?')) return;
-            setIssues(issues.filter(item => item.id !== issue.id));
+            if (!setIssues(issues.filter(item => item.id !== issue.id))) return;
             if (editing === issue.id) { setEditing(null); setTitle(''); setNotes(''); setError(''); }
           }}>Delete {issue.title}</button>
         </article>)}
