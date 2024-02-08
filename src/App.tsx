@@ -21,6 +21,7 @@ export function App() {
   }
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
+  const [priority, setPriority] = useState<Issue['priority']>('Normal');
   const [filter, setFilter] = useState('All');
   const [query, setQuery] = useState('');
   const visible = issues.filter(
@@ -41,7 +42,7 @@ export function App() {
       if (
         !setIssues(
           issues.map((issue) =>
-            issue.id === editing ? { ...issue, title: title.trim(), notes: notes.trim() } : issue
+            issue.id === editing ? { ...issue, title: title.trim(), notes: notes.trim(), priority } : issue
           )
         )
       )
@@ -54,6 +55,7 @@ export function App() {
           title: title.trim(),
           notes: notes.trim(),
           status: 'Open',
+          priority,
         },
       ])
     )
@@ -61,6 +63,7 @@ export function App() {
     setEditing(null);
     setTitle('');
     setNotes('');
+    setPriority('Normal');
     setError('');
   }
 
@@ -102,6 +105,7 @@ export function App() {
               rows={4}
             />
           </label>
+          <label>Priority<select value={priority} onChange={event => setPriority(event.target.value as Issue['priority'])}><option>Low</option><option>Normal</option><option>High</option></select></label>
           {error && (
             <p role="alert" className="text-red-700">
               {error}
@@ -115,6 +119,7 @@ export function App() {
                 setEditing(null);
                 setTitle('');
                 setNotes('');
+    setPriority('Normal');
                 setError('');
               }}
             >
@@ -149,6 +154,7 @@ export function App() {
           )}
           {visible.map((issue) => (
             <article key={issue.id} className="min-w-0 space-y-3 rounded-xl bg-white p-6 shadow-sm">
+              <p className="text-sm text-indigo-700">{issue.priority} priority</p>
               <h2 className="break-words text-xl font-semibold">{issue.title}</h2>
               <p className="whitespace-pre-wrap break-words text-slate-600">{issue.notes}</p>
               <label className="break-words">
@@ -178,6 +184,7 @@ export function App() {
                   setEditing(issue.id);
                   setTitle(issue.title);
                   setNotes(issue.notes);
+                  setPriority(issue.priority);
                   setError('');
                 }}
               >
@@ -194,6 +201,7 @@ export function App() {
                     setEditing(null);
                     setTitle('');
                     setNotes('');
+    setPriority('Normal');
                     setError('');
                   }
                 }}
