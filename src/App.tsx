@@ -24,11 +24,16 @@ export function App() {
   const [priority, setPriority] = useState<Issue['priority']>('Normal');
   const [filter, setFilter] = useState('All');
   const [query, setQuery] = useState('');
+  const [order, setOrder] = useState('Added');
   const visible = issues.filter(
     (issue) =>
       (filter === 'All' || issue.status === filter) &&
       (issue.title + ' ' + issue.notes).toLowerCase().includes(query.trim().toLowerCase())
   );
+  if (order === 'Priority') {
+    const rank = { High: 0, Normal: 1, Low: 2 };
+    visible.sort((a, b) => rank[a.priority] - rank[b.priority]);
+  } else if (order === 'Title') visible.sort((a, b) => a.title.localeCompare(b.title));
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
 
@@ -143,6 +148,7 @@ export function App() {
               </select>
             </label>
           </div>
+          <label>Sort issues<select value={order} onChange={event => setOrder(event.target.value)}><option>Added</option><option>Priority</option><option>Title</option></select></label>
           <p className="text-sm text-slate-600" aria-live="polite">
             {visible.length} of {issues.length} issues
           </p>
