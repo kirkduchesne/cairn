@@ -47,7 +47,7 @@ export function App() {
       if (
         !setIssues(
           issues.map((issue) =>
-            issue.id === editing ? { ...issue, title: title.trim(), notes: notes.trim(), priority } : issue
+            issue.id === editing ? { ...issue, title: title.trim(), notes: notes.trim(), priority, updatedAt: new Date().toISOString() } : issue
           )
         )
       )
@@ -60,6 +60,7 @@ export function App() {
           title: title.trim(),
           notes: notes.trim(),
           status: 'Open',
+          updatedAt: new Date().toISOString(),
           priority,
         },
       ])
@@ -160,6 +161,7 @@ export function App() {
           )}
           {visible.map((issue) => (
             <article key={issue.id} className="min-w-0 space-y-3 rounded-xl bg-white p-6 shadow-sm">
+              <p className="text-xs text-slate-600">{issue.updatedAt ? `Updated ${new Date(issue.updatedAt).toLocaleString()}` : 'Imported from an earlier list'}</p>
               <p className="text-sm text-indigo-700">{issue.priority} priority</p>
               <h2 className="break-words text-xl font-semibold">{issue.title}</h2>
               <p className="whitespace-pre-wrap break-words text-slate-600">{issue.notes}</p>
@@ -172,7 +174,7 @@ export function App() {
                     setIssues(
                       issues.map((item) =>
                         item.id === issue.id
-                          ? { ...item, status: event.target.value as Issue['status'] }
+                          ? { ...item, status: event.target.value as Issue['status'], updatedAt: new Date().toISOString() }
                           : item
                       )
                     )
