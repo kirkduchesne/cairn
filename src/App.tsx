@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 
+import { downloadBackup } from './backup';
 import { Issue, loadIssues, storageKey } from './storage';
 
 export function App() {
@@ -82,6 +83,7 @@ export function App() {
         <h1 className="mt-2 text-4xl font-bold">Issue Desk</h1>
         <p className="mt-3 text-slate-600">Keep the next fix in sight.</p>
       </header>
+      <div className="mb-5"><button type="button" disabled={Boolean(initial.error)} onClick={() => downloadBackup(issues)}>Export backup</button></div>
       {storageError && (
         <p role="alert" className="mb-4 rounded bg-red-100 p-4 text-red-900">
           {storageError}
