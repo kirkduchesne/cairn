@@ -20,3 +20,8 @@ export function downloadBackup(issues: Issue[]) {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+export function mergeBackup(current: Issue[], incoming: Issue[]): Issue[] {
+  const existing = new Set(current.map(issue => issue.id));
+  return [...current, ...incoming.filter(issue => !existing.has(issue.id))];
+}

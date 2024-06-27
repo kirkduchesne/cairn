@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 
-import { downloadBackup } from './backup';
+import { downloadBackup, parseBackup, mergeBackup } from './backup';
 import { Issue, loadIssues, storageKey } from './storage';
 
 export function App() {
@@ -37,6 +37,8 @@ export function App() {
   } else if (order === 'Title') visible.sort((a, b) => a.title.localeCompare(b.title));
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [backupText, setBackupText] = useState('');
+  const [importMessage, setImportMessage] = useState('');
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -84,6 +86,21 @@ export function App() {
         <p className="mt-3 text-slate-600">Keep the next fix in sight.</p>
       </header>
       <div className="mb-5"><button type="button" disabled={Boolean(initial.error)} onClick={() => downloadBackup(issues)}>Export backup</button></div>
+      <details className="mb-5 rounded bg-white p-4">
+        <summary>Restore a backup</summary>
+        <label>Backup JSON<textarea value={backupText} onChange={event => setBackupText(event.target.value)} rows={4} maxLength={1000000} /></label>
+        <p className="my-2 text-sm">Only new issue IDs are added. Existing issues are never replaced.</p>
+        <button type="button" disabled={Boolean(initial.error)} onClick={() => {
+          try {
+            const incoming = parseBackup(backupText);
+            const next = mergeBackup(issues, incoming);
+            if (!setIssues(next)) return;
+            setImportMessage(`Added ${next.length - issues.length} issues; skipped ${incoming.length - (next.length - issues.length)} existing IDs.`);
+            setBackupText('');
+          } catch { setImportMessage('Backup is invalid. Nothing was changed.'); }
+        }}>Import new issues</button>
+        <p role="status">{importMessage}</p>
+      </details>
       {storageError && (
         <p role="alert" className="mb-4 rounded bg-red-100 p-4 text-red-900">
           {storageError}
