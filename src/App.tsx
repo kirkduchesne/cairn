@@ -1,17 +1,24 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
 import { Issue, loadIssues, storageKey } from './storage';
 
 export function App() {
   const [initial] = useState(loadIssues);
+  const savedSnapshot = useRef(initial.raw);
   const [issues, updateIssues] = useState<Issue[]>(initial.issues);
   const [storageError, setStorageError] = useState(initial.error);
 
   function setIssues(next: Issue[]) {
     if (initial.error) return false;
     try {
-      localStorage.setItem(storageKey, JSON.stringify(next));
+      if (localStorage.getItem(storageKey) !== savedSnapshot.current) {
+        setStorageError('Saved issues changed in another tab. Export your current list, then reload before making changes.');
+        return false;
+      }
+      const raw = JSON.stringify(next);
+      localStorage.setItem(storageKey, raw);
+      savedSnapshot.current = raw;
       updateIssues(next);
       setStorageError('');
       return true;

@@ -34,12 +34,14 @@ export function parseIssues(raw: string | null): Issue[] {
   return data.map(item => ({ ...item, priority: item.priority ?? 'Normal', updatedAt: item.updatedAt ?? null }));
 }
 
-export function loadIssues(): { issues: Issue[]; error: string } {
+export function loadIssues(): { issues: Issue[]; error: string; raw: string | null } {
   try {
-    return { issues: parseIssues(localStorage.getItem(storageKey)), error: '' };
+    const raw = localStorage.getItem(storageKey);
+    return { issues: parseIssues(raw), error: '', raw };
   } catch {
     return {
       issues: [],
+      raw: null,
       error:
         'Saved issues could not be read. Reload after checking browser storage. Changes are disabled to protect existing data.',
     };
