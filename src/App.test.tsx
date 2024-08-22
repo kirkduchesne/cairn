@@ -87,3 +87,36 @@ test('validates shape and duplicate identifiers', () => {
   const issue = { id: 'a', title: 'Task', notes: '', status: 'Open' };
   expect(() => parseIssues(JSON.stringify([issue, issue]))).toThrow();
 });
+
+test('migrates legacy issues and sorts priorities', () => {
+  localStorage.setItem(storageKey, JSON.stringify([{ id: 'old', title: 'Old task', notes: '', status: 'Open' }]));
+  render(<App />);
+  expect(screen.getByText('Normal priority')).toBeTruthy();
+  expect(screen.getByText('Imported from an earlier list')).toBeTruthy();
+  fireEvent.change(screen.getByLabelText('Priority'), { target: { value: 'High' } });
+  add('Urgent task');
+  fireEvent.change(screen.getByLabelText('Sort issues'), { target: { value: 'Priority' } });
+  expect(document.querySelector('article h2')!.textContent).toBe('Urgent task');
+});
+
+test('preserves unseen changes from another tab', () => {
+  render(<App />);
+  localStorage.setItem(storageKey, '[]');
+  add();
+  expect(screen.getByRole('alert').textContent).toContain('another tab');
+  expect(localStorage.getItem(storageKey)).toBe('[]');
+});
+
+test('imports only new ids and rejects invalid backups', () => {
+  render(<App />); add();
+  const existing = JSON.parse(localStorage.getItem(storageKey)!);
+  const imported = { ...existing[0], id: 'imported', title: 'Imported task' };
+  fireEvent.change(screen.getByLabelText('Backup JSON'), { target: { value: JSON.stringify({ version: 1, issues: [...existing, imported] }) } });
+  fireEvent.click(screen.getByText('Import new issues'));
+  expect(screen.getByText('Imported task')).toBeTruthy();
+  expect(screen.getByText('Added 1 issues; skipped 1 existing IDs.')).toBeTruthy();
+  fireEvent.change(screen.getByLabelText('Backup JSON'), { target: { value: '{bad' } });
+  fireEvent.click(screen.getByText('Import new issues'));
+  expect(screen.getByText('Backup is invalid. Nothing was changed.')).toBeTruthy();
+  expect(JSON.parse(localStorage.getItem(storageKey)!)).toHaveLength(2);
+});
