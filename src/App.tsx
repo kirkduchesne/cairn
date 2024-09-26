@@ -6,6 +6,8 @@ import { Issue, loadIssues, storageKey } from './storage';
 export function App() {
   const [initial] = useState(loadIssues);
   const savedSnapshot = useRef(initial.raw);
+  const titleInput = useRef<HTMLInputElement>(null);
+  const [announcement, setAnnouncement] = useState('');
   const [issues, updateIssues] = useState<Issue[]>(initial.issues);
   const [storageError, setStorageError] = useState(initial.error);
 
@@ -76,6 +78,8 @@ export function App() {
       ])
     )
       return;
+    setAnnouncement(editing ? 'Issue updated.' : 'Issue added.');
+    titleInput.current?.focus();
     setEditing(null);
     setTitle('');
     setNotes('');
@@ -85,6 +89,7 @@ export function App() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
+      <p role="status" className="sr-only">{announcement}</p>
       <header className="mb-8">
         <p className="text-sm font-semibold uppercase tracking-widest text-indigo-700">
           Personal workspace
@@ -122,6 +127,7 @@ export function App() {
           <label>
             Title
             <input
+              ref={titleInput}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               maxLength={100}
@@ -215,6 +221,7 @@ export function App() {
                 type="button"
                 aria-label={'Edit ' + issue.title}
                 onClick={() => {
+                  titleInput.current?.focus();
                   setEditing(issue.id);
                   setTitle(issue.title);
                   setNotes(issue.notes);
@@ -231,6 +238,8 @@ export function App() {
                 onClick={() => {
                   if (!window.confirm('Delete this issue?')) return;
                   if (!setIssues(issues.filter((item) => item.id !== issue.id))) return;
+                  titleInput.current?.focus();
+                  setAnnouncement('Issue deleted.');
                   if (editing === issue.id) {
                     setEditing(null);
                     setTitle('');
