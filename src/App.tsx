@@ -55,6 +55,10 @@ export function App() {
       setError('Enter an issue title.');
       return;
     }
+    if (!editing && issues.length >= 500) {
+      setError('This list is limited to 500 issues. Export a backup and remove finished work.');
+      return;
+    }
     if (editing) {
       if (
         !setIssues(
@@ -101,7 +105,7 @@ export function App() {
       <details className="mb-5 rounded bg-white p-4">
         <summary>Restore a backup</summary>
         <label>Backup JSON<textarea value={backupText} onChange={event => setBackupText(event.target.value)} rows={4} maxLength={1000000} /></label>
-        <p className="my-2 text-sm">Only new issue IDs are added. Existing issues are never replaced.</p>
+        <p className="my-2 text-sm">Only new issue IDs are added. Existing issues are never replaced. Maximum 500 issues and one million backup characters.</p>
         <button type="button" disabled={Boolean(initial.error)} onClick={() => {
           try {
             const incoming = parseBackup(backupText);
@@ -109,7 +113,7 @@ export function App() {
             if (!setIssues(next)) return;
             setImportMessage(`Added ${next.length - issues.length} issues; skipped ${incoming.length - (next.length - issues.length)} existing IDs.`);
             setBackupText('');
-          } catch { setImportMessage('Backup is invalid. Nothing was changed.'); }
+          } catch { setImportMessage('Backup is invalid or exceeds the list limit. Nothing was changed.'); }
         }}>Import new issues</button>
         <p role="status">{importMessage}</p>
       </details>

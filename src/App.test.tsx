@@ -117,6 +117,6 @@ test('imports only new ids and rejects invalid backups', () => {
   expect(screen.getByText('Added 1 issues; skipped 1 existing IDs.')).toBeTruthy();
   fireEvent.change(screen.getByLabelText('Backup JSON'), { target: { value: '{bad' } });
   fireEvent.click(screen.getByText('Import new issues'));
-  expect(screen.getByText('Backup is invalid. Nothing was changed.')).toBeTruthy();
+  expect(screen.getByText('Backup is invalid or exceeds the list limit. Nothing was changed.')).toBeTruthy();
   expect(JSON.parse(localStorage.getItem(storageKey)!)).toHaveLength(2);
 });

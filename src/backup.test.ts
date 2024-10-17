@@ -14,3 +14,8 @@ test('rejects bad versions priorities and timestamps', () => {
     expect(() => parseBackup(JSON.stringify(value))).toThrow();
   }
 });
+test('rejects oversized input and combined lists', () => {
+  expect(() => parseBackup(' '.repeat(1000001))).toThrow();
+  const many = Array.from({ length: 500 }, (_, index) => ({ ...issues[0], id: String(index) }));
+  expect(() => mergeBackup(many, [{ ...issues[0], id: 'extra' }])).toThrow();
+});
