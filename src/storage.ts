@@ -23,18 +23,30 @@ export function parseIssues(raw: string | null): Issue[] {
         item.title.length > 100 ||
         typeof item.notes !== 'string' ||
         item.notes.length > 1000 ||
-        (item.updatedAt !== undefined && item.updatedAt !== null && (typeof item.updatedAt !== 'string' || !Number.isFinite(Date.parse(item.updatedAt)))) ||
-        (item.priority !== undefined && !['Low', 'Normal', 'High'].includes(item.priority)) ||
-        !['Open', 'In progress', 'Done'].includes(item.status)
+        (item.updatedAt !== undefined &&
+          item.updatedAt !== null &&
+          (typeof item.updatedAt !== 'string' ||
+            !Number.isFinite(Date.parse(item.updatedAt)))) ||
+        (item.priority !== undefined &&
+          !['Low', 'Normal', 'High'].includes(item.priority)) ||
+        !['Open', 'In progress', 'Done'].includes(item.status),
     ) ||
     new Set(data.map((item) => item.id)).size !== data.length
   ) {
     throw new Error('Invalid saved issues');
   }
-  return data.map(item => ({ ...item, priority: item.priority ?? 'Normal', updatedAt: item.updatedAt ?? null }));
+  return data.map((item) => ({
+    ...item,
+    priority: item.priority ?? 'Normal',
+    updatedAt: item.updatedAt ?? null,
+  }));
 }
 
-export function loadIssues(): { issues: Issue[]; error: string; raw: string | null } {
+export function loadIssues(): {
+  issues: Issue[];
+  error: string;
+  raw: string | null;
+} {
   try {
     const raw = localStorage.getItem(storageKey);
     return { issues: parseIssues(raw), error: '', raw };
