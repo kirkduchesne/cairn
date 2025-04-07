@@ -1,6 +1,7 @@
 import { FormEvent, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
+import { queryIssues } from './query';
 import { Issue, loadIssues, storageKey } from './storage';
 
 export function App() {
@@ -46,18 +47,7 @@ export function App() {
   const [filter, setFilter] = useState('All');
   const [query, setQuery] = useState('');
   const [order, setOrder] = useState('Added');
-  const visible = issues.filter(
-    (issue) =>
-      (filter === 'All' || issue.status === filter) &&
-      (issue.title + ' ' + issue.notes)
-        .toLowerCase()
-        .includes(query.trim().toLowerCase()),
-  );
-  if (order === 'Priority') {
-    const rank = { High: 0, Normal: 1, Low: 2 };
-    visible.sort((a, b) => rank[a.priority] - rank[b.priority]);
-  } else if (order === 'Title')
-    visible.sort((a, b) => a.title.localeCompare(b.title));
+  const visible = queryIssues(issues, { text: query, status: filter, priority: 'All', order });
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [backupText, setBackupText] = useState('');
