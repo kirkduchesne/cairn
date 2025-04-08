@@ -45,9 +45,10 @@ export function App() {
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<Issue['priority']>('Normal');
   const [filter, setFilter] = useState('All');
+  const [priorityFilter, setPriorityFilter] = useState('All');
   const [query, setQuery] = useState('');
   const [order, setOrder] = useState('Added');
-  const visible = queryIssues(issues, { text: query, status: filter, priority: 'All', order });
+  const visible = queryIssues(issues, { text: query, status: filter, priority: priorityFilter, order });
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [backupText, setBackupText] = useState('');
@@ -284,6 +285,7 @@ export function App() {
               <option>Title</option>
             </select>
           </label>
+          <label>Filter priority<select value={priorityFilter} onChange={event => setPriorityFilter(event.target.value)}><option>All</option><option>Low</option><option>Normal</option><option>High</option></select></label>
           <p className="text-sm text-slate-600" aria-live="polite">
             {visible.length} of {issues.length} issues
           </p>

@@ -7,6 +7,7 @@ export function queryIssues(issues: Issue[], query: Query): Issue[] {
   const text = query.text.trim().toLowerCase();
   const result = issues.filter(issue =>
     (query.status === 'All' || issue.status === query.status) &&
+    (query.priority === 'All' || issue.priority === query.priority) &&
     (issue.title + ' ' + issue.notes).toLowerCase().includes(text));
   if (query.order === 'Priority') {
     const rank = { High: 0, Normal: 1, Low: 2 };
