@@ -1,6 +1,7 @@
 import { FormEvent, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
+import { SavedViews } from './SavedViews';
 import { queryIssues } from './query';
 import { Issue, loadIssues, storageKey } from './storage';
 
@@ -118,6 +119,7 @@ export function App() {
         <h1 className="mt-2 text-4xl font-bold">Issue Desk</h1>
         <p className="mt-3 text-slate-600">Keep the next fix in sight.</p>
       </header>
+      <SavedViews query={{ text: query, status: filter, priority: priorityFilter, order }} onApply={view => { setQuery(view.text); setFilter(view.status); setPriorityFilter(view.priority); setOrder(view.order); }} />
       <div className="mb-5">
         <button
           type="button"
@@ -257,7 +259,7 @@ export function App() {
             <label>
               Search issues
               <input
-                value={query}
+                maxLength={200} value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </label>

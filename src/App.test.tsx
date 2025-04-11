@@ -96,7 +96,7 @@ test('leaves corrupt storage untouched and disables mutation', () => {
   expect(screen.getByRole('alert').textContent).toContain(
     'Changes are disabled',
   );
-  expect(document.querySelector('fieldset')!.disabled).toBe(true);
+  expect((screen.getByLabelText('Title').closest('fieldset') as HTMLFieldSetElement).disabled).toBe(true);
   expect(localStorage.getItem(storageKey)).toBe('{broken');
 });
 
