@@ -17,3 +17,19 @@ export function parseViews(raw: string | null): SavedView[] {
   }
   return data;
 }
+
+export function loadViews(): { views: SavedView[]; raw: string | null; error: string } {
+  try {
+    const raw = localStorage.getItem(viewsKey);
+    return { views: parseViews(raw), raw, error: '' };
+  } catch {
+    return { views: [], raw: null, error: 'Saved views cannot be read. Existing data is preserved; reload after checking browser storage.' };
+  }
+}
+export function persistViews(views: SavedView[], expected: string | null): string {
+  const raw = JSON.stringify(views);
+  parseViews(raw);
+  if (localStorage.getItem(viewsKey) !== expected) throw new Error('Views changed in another tab. Reload before saving views.');
+  localStorage.setItem(viewsKey, raw);
+  return raw;
+}
