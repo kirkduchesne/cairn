@@ -7,6 +7,7 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
   const snapshot = useRef(initial.raw);
   const [views, setViews] = useState(initial.views);
   const [name, setName] = useState('');
+  const [selected, setSelected] = useState('');
   const [message, setMessage] = useState(initial.error);
   function save(next: SavedView[]) {
     if (initial.error) return false;
@@ -23,6 +24,10 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
   return <section className="mb-5 space-y-3 rounded bg-white p-4" aria-label="Saved views">
     <h2 className="font-semibold">Saved views</h2>
     <fieldset disabled={Boolean(initial.error)} className="space-y-3">
+      <label>Choose saved view<select value={selected} onChange={event => {
+        const view = views.find(item => item.id === event.target.value);
+        if (view) { setSelected(view.id); onApply(view.query); }
+      }}><option value="">Choose a view</option>{views.map(view => <option key={view.id} value={view.id}>{view.name}</option>)}</select></label>
       <label>View name<input value={name} onChange={event => setName(event.target.value)} maxLength={40} /></label>
       <button type="button" onClick={() => {
         if (!name.trim()) { setMessage('Enter a view name.'); return; }
