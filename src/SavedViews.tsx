@@ -34,6 +34,10 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
         const view = { id: Date.now().toString(36) + Math.random().toString(36).slice(2), name: name.trim(), query };
         if (save([...views, view])) setName('');
       }}>Save new view</button>
+      <button type="button" disabled={!selected} onClick={() => {
+        if (!name.trim()) { setMessage('Enter the new view name.'); return; }
+        if (save(views.map(view => view.id === selected ? { ...view, name: name.trim() } : view))) setName('');
+      }}>Rename selected view</button>
     </fieldset>
     <p role="status">{message}</p>
   </section>;
