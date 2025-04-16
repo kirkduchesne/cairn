@@ -38,6 +38,10 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
         if (!name.trim()) { setMessage('Enter the new view name.'); return; }
         if (save(views.map(view => view.id === selected ? { ...view, name: name.trim() } : view))) setName('');
       }}>Rename selected view</button>
+      <button type="button" disabled={!selected} onClick={() => {
+        if (!window.confirm('Delete this saved view? Issues will remain unchanged.')) return;
+        if (save(views.filter(view => view.id !== selected))) setSelected('');
+      }}>Delete selected view</button>
     </fieldset>
     <p role="status">{message}</p>
   </section>;
