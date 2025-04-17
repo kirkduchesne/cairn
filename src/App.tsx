@@ -288,6 +288,7 @@ export function App() {
             </select>
           </label>
           <label>Filter priority<select value={priorityFilter} onChange={event => setPriorityFilter(event.target.value)}><option>All</option><option>Low</option><option>Normal</option><option>High</option></select></label>
+          <button type="button" onClick={() => { setQuery(''); setFilter('All'); setPriorityFilter('All'); setOrder('Added'); }}>Reset filters</button>
           <p className="text-sm text-slate-600" aria-live="polite">
             {visible.length} of {issues.length} issues
           </p>
