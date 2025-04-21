@@ -21,6 +21,8 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
       return false;
     }
   }
+  const active = views.find(view => view.id === selected);
+  const changed = active && JSON.stringify(active.query) !== JSON.stringify(query);
   return <section className="mb-5 space-y-3 rounded bg-white p-4" aria-label="Saved views">
     <h2 className="font-semibold">Saved views</h2>
     <fieldset disabled={Boolean(initial.error)} className="space-y-3">
@@ -43,6 +45,7 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
         if (save(views.filter(view => view.id !== selected))) setSelected('');
       }}>Delete selected view</button>
     </fieldset>
+    {changed && <p>Current filters differ from the selected view.</p>}
     <p role="status">{message}</p>
   </section>;
 }
