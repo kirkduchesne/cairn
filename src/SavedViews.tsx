@@ -44,6 +44,7 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
         if (!window.confirm('Delete this saved view? Issues will remain unchanged.')) return;
         if (save(views.filter(view => view.id !== selected))) setSelected('');
       }}>Delete selected view</button>
+      <button type="button" disabled={!selected || !changed} onClick={() => save(views.map(view => view.id === selected ? { ...view, query } : view))}>Update selected view</button>
     </fieldset>
     {changed && <p>Current filters differ from the selected view.</p>}
     <p role="status">{message}</p>
