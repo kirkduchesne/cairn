@@ -55,3 +55,14 @@ merging, corrupt storage, write failures, and changes made by another tab.
 This historical toolchain has known advisories. Upgrade dependencies before using
 it for a current public service. The local app is not a shared issue-management
 system and has no automatic backup or synchronization.
+
+## Reusable views
+
+Save up to 12 named combinations of search, status, priority, and sort order.
+Choose a view to apply it, then explicitly update it after changing filters.
+Renaming and deleting views never change issues. Names are limited to 40 characters
+and must be unique ignoring case. Search is limited to 200 characters.
+
+Views use separate browser storage (`issue-desk-views-v1`). Invalid data is kept
+untouched; conflicting changes from another tab require a reload. Issue backups
+contain issues, not view definitions. Reset filters returns to the complete list.
