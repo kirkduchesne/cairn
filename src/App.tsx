@@ -1,4 +1,4 @@
-import { FormEvent, useRef, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
 import { SavedViews } from './SavedViews';
@@ -50,6 +50,9 @@ export function App() {
   const [query, setQuery] = useState('');
   const [order, setOrder] = useState('Added');
   const visible = queryIssues(issues, { text: query, status: filter, priority: priorityFilter, order });
+  const [selected, setSelected] = useState<string[]>([]);
+  useEffect(() => { setSelected([]); }, [query, filter, priorityFilter, order]);
+  const selectedVisible = visible.filter(issue => selected.includes(issue.id));
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [backupText, setBackupText] = useState('');
@@ -313,6 +316,7 @@ export function App() {
               <p className="text-sm text-indigo-700">
                 {issue.priority} priority
               </p>
+              <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4" aria-label={'Select ' + issue.title} checked={selected.includes(issue.id)} onChange={event => setSelected(event.target.checked ? [...selected, issue.id] : selected.filter(id => id !== issue.id))} />Select issue</label>
               <h2 className="break-words text-xl font-semibold">
                 {issue.title}
               </h2>
