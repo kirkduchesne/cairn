@@ -296,6 +296,8 @@ export function App() {
             {visible.length} of {issues.length} issues
           </p>
           <button type="button" disabled={visible.length === 0} onClick={() => setSelected(visible.map(issue => issue.id))}>Select visible issues</button>
+          <p role="status">{selectedVisible.length} selected</p>
+          <button type="button" disabled={selectedVisible.length === 0} onClick={() => setSelected([])}>Clear selection</button>
           {issues.length > 0 && visible.length === 0 && (
             <p>No issues match your filters.</p>
           )}
