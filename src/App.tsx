@@ -295,6 +295,7 @@ export function App() {
           <p className="text-sm text-slate-600" aria-live="polite">
             {visible.length} of {issues.length} issues
           </p>
+          <button type="button" disabled={visible.length === 0} onClick={() => setSelected(visible.map(issue => issue.id))}>Select visible issues</button>
           {issues.length > 0 && visible.length === 0 && (
             <p>No issues match your filters.</p>
           )}
