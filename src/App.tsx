@@ -21,6 +21,7 @@ export function App() {
   const [issues, updateIssues] = useState<Issue[]>(initial.issues);
   const [storageError, setStorageError] = useState(initial.error);
 
+  const [undo, setUndo] = useState<Issue[] | null>(null);
   function setIssues(next: Issue[]) {
     if (initial.error) return false;
     try {
@@ -34,6 +35,7 @@ export function App() {
       localStorage.setItem(storageKey, raw);
       savedSnapshot.current = raw;
       updateIssues(next);
+      setUndo(null);
       setStorageError('');
       return true;
     } catch {
@@ -58,7 +60,7 @@ export function App() {
     const ids = visible.filter(issue => selected.includes(issue.id)).map(issue => issue.id);
     const next = changeSelected(issues, ids, patch, new Date().toISOString());
     if (next.every((issue, index) => issue === issues[index])) { announce('Selected issues already match.'); return; }
-    if (setIssues(next)) { setSelected([]); announce('Selected issues updated.'); }
+    if (setIssues(next)) { setUndo(issues); setSelected([]); announce('Selected issues updated.'); }
   }
   const selectedVisible = visible.filter(issue => selected.includes(issue.id));
   const [editing, setEditing] = useState<string | null>(null);
@@ -306,6 +308,9 @@ export function App() {
           <button type="button" disabled={visible.length === 0} onClick={() => setSelected(visible.map(issue => issue.id))}>Select visible issues</button>
           <label>Batch status<select value={batchStatus} onChange={event => setBatchStatus(event.target.value as Issue['status'])}><option>Open</option><option>In progress</option><option>Done</option></select></label>
           <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyBatch({ status: batchStatus })}>Apply status</button>
+          <button type="button" disabled={!undo || Boolean(editing)} onClick={() => {
+            if (undo && setIssues(undo)) { setSelected([]); announce('Last batch change undone.'); }
+          }}>Undo last batch</button>
           <p role="status">{selectedVisible.length} selected</p>
           <button type="button" disabled={selectedVisible.length === 0} onClick={() => setSelected([])}>Clear selection</button>
           {issues.length > 0 && visible.length === 0 && (
