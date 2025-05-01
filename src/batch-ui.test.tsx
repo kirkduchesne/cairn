@@ -26,3 +26,16 @@ test('later changes invalidate undo rather than overwriting edits', () => {
   fireEvent.change(screen.getByLabelText('Status for Task B'), { target: { value: 'In progress' } });
   expect((screen.getByText('Undo last batch') as HTMLButtonElement).disabled).toBe(true);
 });
+test('undo rejects external changes and remains available after a failed write', () => {
+  render(<App />);
+  fireEvent.click(screen.getByLabelText('Select Task A'));
+  fireEvent.click(screen.getByText('Apply status'));
+  const current = localStorage.getItem(storageKey)!;
+  localStorage.setItem(storageKey, '[]');
+  fireEvent.click(screen.getByText('Undo last batch'));
+  expect(localStorage.getItem(storageKey)).toBe('[]');
+  expect((screen.getByText('Undo last batch') as HTMLButtonElement).disabled).toBe(false);
+  localStorage.setItem(storageKey, current);
+  fireEvent.click(screen.getByText('Undo last batch'));
+  expect((screen.getByLabelText('Status for Task A') as HTMLSelectElement).value).toBe('Open');
+});
