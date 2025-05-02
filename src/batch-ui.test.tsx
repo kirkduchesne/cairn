@@ -39,3 +39,15 @@ test('undo rejects external changes and remains available after a failed write',
   fireEvent.click(screen.getByText('Undo last batch'));
   expect((screen.getByLabelText('Status for Task A') as HTMLSelectElement).value).toBe('Open');
 });
+test('changing filters clears hidden selections', () => {
+  render(<App />);
+  fireEvent.click(screen.getByText('Select visible issues'));
+  fireEvent.change(screen.getByLabelText('Search issues'), { target: { value: 'Task B' } });
+  expect(screen.getByText('0 selected')).toBeTruthy();
+  expect((screen.getByText('Apply status') as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.click(screen.getByLabelText('Select Task B'));
+  fireEvent.click(screen.getByText('Apply status'));
+  const rows = JSON.parse(localStorage.getItem(storageKey)!);
+  expect(rows[0].status).toBe('Open');
+  expect(rows[1].status).toBe('Done');
+});
