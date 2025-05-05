@@ -56,6 +56,7 @@ export function App() {
   const [selected, setSelected] = useState<string[]>([]);
   useEffect(() => { setSelected([]); }, [query, filter, priorityFilter, order]);
   const [batchStatus, setBatchStatus] = useState<Issue['status']>('Done');
+  const [batchPriority, setBatchPriority] = useState<Issue['priority']>('High');
   function applyBatch(patch: Partial<Pick<Issue, 'status' | 'priority'>>) {
     const ids = visible.filter(issue => selected.includes(issue.id)).map(issue => issue.id);
     const next = changeSelected(issues, ids, patch, new Date().toISOString());
@@ -308,6 +309,8 @@ export function App() {
           <button type="button" disabled={visible.length === 0} onClick={() => setSelected(visible.map(issue => issue.id))}>Select visible issues</button>
           <label>Batch status<select value={batchStatus} onChange={event => setBatchStatus(event.target.value as Issue['status'])}><option>Open</option><option>In progress</option><option>Done</option></select></label>
           <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyBatch({ status: batchStatus })}>Apply status</button>
+          <label>Batch priority<select value={batchPriority} onChange={event => setBatchPriority(event.target.value as Issue['priority'])}><option>Low</option><option>Normal</option><option>High</option></select></label>
+          <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyBatch({ priority: batchPriority })}>Apply priority</button>
           <button type="button" disabled={!undo || Boolean(editing)} onClick={() => {
             if (undo && setIssues(undo)) { setSelected([]); announce('Last batch change undone.'); }
           }}>Undo last batch</button>
