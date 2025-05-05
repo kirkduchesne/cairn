@@ -51,3 +51,13 @@ test('changing filters clears hidden selections', () => {
   expect(rows[0].status).toBe('Open');
   expect(rows[1].status).toBe('Done');
 });
+test('no-op batches keep the previous undo and do not write storage', () => {
+  render(<App />);
+  fireEvent.click(screen.getByLabelText('Select Task A'));
+  fireEvent.click(screen.getByText('Apply status'));
+  fireEvent.click(screen.getByLabelText('Select Task A'));
+  const write = vi.spyOn(Storage.prototype, 'setItem');
+  fireEvent.click(screen.getByText('Apply status'));
+  expect(write).not.toHaveBeenCalled();
+  expect((screen.getByText('Undo last batch') as HTMLButtonElement).disabled).toBe(false);
+});
