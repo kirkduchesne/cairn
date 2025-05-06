@@ -307,6 +307,7 @@ export function App() {
             {visible.length} of {issues.length} issues
           </p>
           <button type="button" disabled={visible.length === 0} onClick={() => setSelected(visible.map(issue => issue.id))}>Select visible issues</button>
+          <p className="text-sm text-slate-600">Batch changes affect {selectedVisible.length} visible selected issues. Status target: {batchStatus}; priority target: {batchPriority}.</p>
           <label>Batch status<select value={batchStatus} onChange={event => setBatchStatus(event.target.value as Issue['status'])}><option>Open</option><option>In progress</option><option>Done</option></select></label>
           <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyBatch({ status: batchStatus })}>Apply status</button>
           <label>Batch priority<select value={batchPriority} onChange={event => setBatchPriority(event.target.value as Issue['priority'])}><option>Low</option><option>Normal</option><option>High</option></select></label>
