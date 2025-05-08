@@ -35,6 +35,7 @@ export function App() {
       localStorage.setItem(storageKey, raw);
       savedSnapshot.current = raw;
       updateIssues(next);
+      setSelected([]);
       setUndo(null);
       setStorageError('');
       return true;
