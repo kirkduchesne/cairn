@@ -61,3 +61,17 @@ test('no-op batches keep the previous undo and do not write storage', () => {
   expect(write).not.toHaveBeenCalled();
   expect((screen.getByText('Undo last batch') as HTMLButtonElement).disabled).toBe(false);
 });
+test('priority batch is one write and undo restores the complete prior list', () => {
+  render(<App />);
+  const before = JSON.parse(localStorage.getItem(storageKey)!);
+  fireEvent.click(screen.getByText('Select visible issues'));
+  const write = vi.spyOn(Storage.prototype, 'setItem');
+  fireEvent.click(screen.getByText('Apply priority'));
+  expect(write).toHaveBeenCalledTimes(1);
+  expect(screen.getAllByText('High priority')).toHaveLength(2);
+  expect(screen.getByText('0 selected')).toBeTruthy();
+  fireEvent.click(screen.getByText('Undo last batch'));
+  const restored = JSON.parse(localStorage.getItem(storageKey)!);
+  expect(restored.map((issue: { title: string }) => issue.title)).toEqual(before.map((issue: { title: string }) => issue.title));
+  expect(screen.getAllByText('Normal priority')).toHaveLength(2);
+});
