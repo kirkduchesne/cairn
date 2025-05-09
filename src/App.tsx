@@ -62,7 +62,7 @@ export function App() {
     const ids = visible.filter(issue => selected.includes(issue.id)).map(issue => issue.id);
     const next = changeSelected(issues, ids, patch, new Date().toISOString());
     if (next.every((issue, index) => issue === issues[index])) { announce('Selected issues already match.'); return; }
-    if (setIssues(next)) { setUndo(issues); setSelected([]); announce('Selected issues updated.'); }
+    if (setIssues(next)) { setUndo(issues); setSelected([]); announce(`${next.filter((issue, index) => issue !== issues[index]).length} selected issues updated.`); }
   }
   const selectedVisible = visible.filter(issue => selected.includes(issue.id));
   const [editing, setEditing] = useState<string | null>(null);

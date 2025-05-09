@@ -5,6 +5,7 @@ import { loadViews, persistViews, SavedView } from './views';
 export function SavedViews({ query, onApply }: { query: Query; onApply: (query: Query) => void }) {
   const [initial] = useState(loadViews);
   const snapshot = useRef(initial.raw);
+  const saveNumber = useRef(0);
   const [views, setViews] = useState(initial.views);
   const [name, setName] = useState('');
   const [selected, setSelected] = useState('');
@@ -14,7 +15,8 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
     try {
       snapshot.current = persistViews(next, snapshot.current);
       setViews(next);
-      setMessage('Views saved.');
+      saveNumber.current += 1;
+      setMessage(`Views saved. Change ${saveNumber.current}.`);
       return true;
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Views could not be saved.');
@@ -29,7 +31,7 @@ export function SavedViews({ query, onApply }: { query: Query; onApply: (query: 
       <label>Choose saved view<select value={selected} onChange={event => {
         const view = views.find(item => item.id === event.target.value);
         if (view) { setSelected(view.id); onApply(view.query); }
-      }}><option value="">Choose a view</option>{views.map(view => <option key={view.id} value={view.id}>{view.name}</option>)}</select></label>
+      }}><option value="" disabled>Choose a view</option>{views.map(view => <option key={view.id} value={view.id}>{view.name}</option>)}</select></label>
       <label>View name<input value={name} onChange={event => setName(event.target.value)} maxLength={40} /></label>
       <button type="button" onClick={() => {
         if (!name.trim()) { setMessage('Enter a view name.'); return; }
