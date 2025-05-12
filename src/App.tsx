@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
+import { summarize } from './summary';
 import { changeSelected } from './batch';
 import { SavedViews } from './SavedViews';
 import { queryIssues } from './query';
@@ -19,6 +20,7 @@ export function App() {
   }
   const [exportMessage, setExportMessage] = useState('');
   const [issues, updateIssues] = useState<Issue[]>(initial.issues);
+  const counts = summarize(issues);
   const [storageError, setStorageError] = useState(initial.error);
 
   const [undo, setUndo] = useState<Issue[] | null>(null);
@@ -134,6 +136,9 @@ export function App() {
         <h1 className="mt-2 text-4xl font-bold">Issue Desk</h1>
         <p className="mt-3 text-slate-600">Keep the next fix in sight.</p>
       </header>
+      <section aria-label="Issue summary" className="mb-5 grid grid-cols-2 gap-3 rounded bg-white p-4 sm:grid-cols-4">
+        <p>Total: {counts.total}</p><p>Open: {counts.Open}</p><p>In progress: {counts['In progress']}</p><p>Done: {counts.Done}</p>
+      </section>
       <SavedViews query={{ text: query, status: filter, priority: priorityFilter, order }} onApply={view => { setQuery(view.text); setFilter(view.status); setPriorityFilter(view.priority); setOrder(view.order); }} />
       <div className="mb-5">
         <button
