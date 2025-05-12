@@ -66,3 +66,14 @@ and must be unique ignoring case. Search is limited to 200 characters.
 Views use separate browser storage (`issue-desk-views-v1`). Invalid data is kept
 untouched; conflicting changes from another tab require a reload. Issue backups
 contain issues, not view definitions. Reset filters returns to the complete list.
+
+## Batch changes
+
+Select issues individually or select the visible results, then apply one status or
+priority. Each action writes the entire list once; a failed write leaves the list
+and selection intact. Filtering clears selection so hidden issues are not changed.
+Finish editing an issue before running a batch action.
+
+Undo reverses only the last successful batch change. A later issue edit, import,
+or deletion invalidates undo. No-op batches keep the previous undo. Unseen storage
+changes are never overwritten by undo; reload after exporting the current list.
