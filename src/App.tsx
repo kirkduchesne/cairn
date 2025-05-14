@@ -137,6 +137,7 @@ export function App() {
         <p className="mt-3 text-slate-600">Keep the next fix in sight.</p>
       </header>
       <section aria-label="Issue summary" className="mb-5 grid grid-cols-2 gap-3 rounded bg-white p-4 sm:grid-cols-4">
+        <p>Unfinished high priority: {counts.attention}</p>
         <p>Total: {counts.total}</p><p>Open: {counts.Open}</p><p>In progress: {counts['In progress']}</p><p>Done: {counts.Done}</p>
       </section>
       <SavedViews query={{ text: query, status: filter, priority: priorityFilter, order }} onApply={view => { setQuery(view.text); setFilter(view.status); setPriorityFilter(view.priority); setOrder(view.order); }} />
