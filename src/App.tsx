@@ -138,7 +138,7 @@ export function App() {
       </header>
       <section aria-label="Issue summary" className="mb-5 grid grid-cols-2 gap-3 rounded bg-white p-4 sm:grid-cols-4">
         <p>Unfinished high priority: {counts.attention}</p>
-        <p>Total: {counts.total}</p><p>Open: {counts.Open}</p><p>In progress: {counts['In progress']}</p><p>Done: {counts.Done}</p>
+        <p>Total: {counts.total}</p>{(['Open', 'In progress', 'Done'] as const).map(status => <button type="button" key={status} onClick={() => { setQuery(''); setPriorityFilter('All'); setFilter(status); }}>{status}: {counts[status]}</button>)}
       </section>
       <SavedViews query={{ text: query, status: filter, priority: priorityFilter, order }} onApply={view => { setQuery(view.text); setFilter(view.status); setPriorityFilter(view.priority); setOrder(view.order); }} />
       <div className="mb-5">
