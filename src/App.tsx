@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
+import { shortcutTarget } from './shortcuts';
 import { summarize } from './summary';
 import { changeSelected } from './batch';
 import { SavedViews } from './SavedViews';
@@ -11,6 +12,17 @@ export function App() {
   const [initial] = useState(loadIssues);
   const savedSnapshot = useRef(initial.raw);
   const titleInput = useRef<HTMLInputElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    function keydown(event: KeyboardEvent) {
+      const target = shortcutTarget(event);
+      if (!target) return;
+      event.preventDefault();
+      (target === 'title' ? titleInput : searchInput).current?.focus();
+    }
+    window.addEventListener('keydown', keydown);
+    return () => window.removeEventListener('keydown', keydown);
+  }, []);
   const [announcement, setAnnouncement] = useState('');
   const actionNumber = useRef(0);
 
@@ -280,7 +292,7 @@ export function App() {
             <label>
               Search issues
               <input
-                maxLength={200} value={query}
+                ref={searchInput} maxLength={200} value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </label>
