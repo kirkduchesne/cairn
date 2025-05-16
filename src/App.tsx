@@ -152,6 +152,7 @@ export function App() {
         <p>Unfinished high priority: {counts.attention}</p>
         <p>Total: {counts.total}</p>{(['Open', 'In progress', 'Done'] as const).map(status => <button type="button" key={status} onClick={() => { setQuery(''); setPriorityFilter('All'); setFilter(status); }}>{status}: {counts[status]}</button>)}
       </section>
+      <details className="mb-5 rounded bg-white p-4"><summary>Keyboard help</summary><p>Alt+N focuses the issue title. Alt+F focuses search. Tab moves between controls; Space selects checkboxes. Browser or system shortcuts may take precedence.</p></details>
       <SavedViews query={{ text: query, status: filter, priority: priorityFilter, order }} onApply={view => { setQuery(view.text); setFilter(view.status); setPriorityFilter(view.priority); setOrder(view.order); }} />
       <div className="mb-5">
         <button
@@ -235,7 +236,7 @@ export function App() {
           <label>
             Title
             <input
-              ref={titleInput}
+              aria-keyshortcuts="Alt+N" ref={titleInput}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               maxLength={100}
@@ -292,7 +293,7 @@ export function App() {
             <label>
               Search issues
               <input
-                ref={searchInput} maxLength={200} value={query}
+                aria-keyshortcuts="Alt+F" ref={searchInput} maxLength={200} value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </label>
