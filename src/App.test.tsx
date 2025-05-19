@@ -221,3 +221,12 @@ test('updates the live announcement for consecutive identical actions', () => {
   }
   expect(announcement.textContent).toBe('Issue updated. Action 4.');
 });
+test('keyboard shortcuts move focus without changing entered text', () => {
+  render(<App />);
+  fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Draft text' } });
+  fireEvent.keyDown(window, { key: 'f', altKey: true });
+  expect(document.activeElement).toBe(screen.getByLabelText('Search issues'));
+  fireEvent.keyDown(window, { key: 'n', altKey: true });
+  expect(document.activeElement).toBe(screen.getByLabelText('Title'));
+  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Draft text');
+});
