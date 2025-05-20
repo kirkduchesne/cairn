@@ -174,7 +174,7 @@ export function App() {
           Export backup
         </button>
         <button type="button" disabled={Boolean(initial.error) || visible.length === 0} onClick={() => {
-          try { downloadBackup(visible); setExportMessage(`Requested backup of ${visible.length} visible issues.`); }
+          try { downloadBackup(visible, 'visible'); setExportMessage(`Requested backup of ${visible.length} visible issues.`); }
           catch { setExportMessage('Filtered backup could not start. Your issues are unchanged.'); }
         }}>Export visible issues</button>
         <p role="status" className="mt-2 text-sm">

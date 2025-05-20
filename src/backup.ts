@@ -15,13 +15,17 @@ export function parseBackup(raw: string): Issue[] {
   return parseIssues(JSON.stringify(data.issues));
 }
 
-export function downloadBackup(issues: Issue[]) {
+export function backupFilename(scope: 'all' | 'visible', now = new Date()): string {
+  return `issue-desk-${scope}-${now.toISOString().slice(0, 10)}.json`;
+}
+
+export function downloadBackup(issues: Issue[], scope: 'all' | 'visible' = 'all') {
   const url = URL.createObjectURL(
     new Blob([serializeBackup(issues)], { type: 'application/json' }),
   );
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'issue-desk-backup.json';
+  link.download = backupFilename(scope);
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
