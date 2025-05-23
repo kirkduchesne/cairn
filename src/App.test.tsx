@@ -146,6 +146,7 @@ test('imports only new ids and rejects invalid backups', () => {
       value: JSON.stringify({ version: 1, issues: [...existing, imported] }),
     },
   });
+  fireEvent.click(screen.getByText('Preview backup'));
   fireEvent.click(screen.getByText('Import new issues'));
   expect(screen.getByText('Imported task')).toBeTruthy();
   expect(
@@ -154,7 +155,7 @@ test('imports only new ids and rejects invalid backups', () => {
   fireEvent.change(screen.getByLabelText('Backup JSON'), {
     target: { value: '{bad' },
   });
-  fireEvent.click(screen.getByText('Import new issues'));
+  fireEvent.click(screen.getByText('Preview backup'));
   expect(
     screen.getByText(
       'Backup is invalid or exceeds the list limit. Nothing was changed.',
@@ -181,6 +182,7 @@ test('focuses the title after edits and preserves failed imports', () => {
   vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
     throw new Error('quota');
   });
+  fireEvent.click(screen.getByText('Preview backup'));
   fireEvent.click(screen.getByText('Import new issues'));
   expect(
     (screen.getByLabelText('Backup JSON') as HTMLTextAreaElement).value,

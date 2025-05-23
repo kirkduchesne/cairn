@@ -83,6 +83,7 @@ export function App() {
   const [error, setError] = useState('');
   const [backupText, setBackupText] = useState('');
   const [importMessage, setImportMessage] = useState('');
+  const [pendingImport, setPendingImport] = useState<Issue[] | null>(null);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -187,7 +188,7 @@ export function App() {
           Backup JSON
           <textarea
             value={backupText}
-            onChange={(event) => setBackupText(event.target.value)}
+            onChange={(event) => { setBackupText(event.target.value); setPendingImport(null); }}
             rows={4}
             maxLength={1000000}
           />
@@ -196,29 +197,22 @@ export function App() {
           Only new issue IDs are added. Existing issues are never replaced.
           Maximum 500 issues and one million backup characters.
         </p>
-        <button
-          type="button"
-          disabled={Boolean(initial.error)}
-          onClick={() => {
+        <button type="button" disabled={Boolean(initial.error)} onClick={() => {
+          try { setPendingImport(parseBackup(backupText)); setImportMessage('Backup validated. Review before importing.'); }
+          catch { setPendingImport(null); setImportMessage('Backup is invalid or exceeds the list limit. Nothing was changed.'); }
+        }}>Preview backup</button>
+        {pendingImport && <div className="space-y-2 rounded border p-3">
+          <p>Backup contains {pendingImport.length} issues. Existing IDs will be skipped.</p>
+          <button type="button" onClick={() => {
             try {
-              const incoming = parseBackup(backupText);
-              const next = mergeBackup(issues, incoming);
+              const next = mergeBackup(issues, pendingImport);
               if (!setIssues(next)) return;
-              setImportMessage(
-                `Added ${next.length - issues.length} issues; skipped ${
-                  incoming.length - (next.length - issues.length)
-                } existing IDs.`,
-              );
-              setBackupText('');
-            } catch {
-              setImportMessage(
-                'Backup is invalid or exceeds the list limit. Nothing was changed.',
-              );
-            }
-          }}
-        >
-          Import new issues
-        </button>
+              setImportMessage(`Added ${next.length - issues.length} issues; skipped ${pendingImport.length - (next.length - issues.length)} existing IDs.`);
+              setPendingImport(null); setBackupText('');
+            } catch { setImportMessage('Backup exceeds the combined list limit. Nothing was changed.'); }
+          }}>Import new issues</button>
+          <button type="button" onClick={() => { setPendingImport(null); setImportMessage('Import cancelled. Nothing was changed.'); }}>Cancel import</button>
+        </div>}
         <p role="status">{importMessage}</p>
       </details>
       {storageError && (
