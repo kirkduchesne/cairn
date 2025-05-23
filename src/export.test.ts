@@ -17,3 +17,23 @@ test('creation failures propagate without changing input', () => {
   try { expect(() => downloadBackup([])).toThrow('unavailable'); }
   finally { if (original) Object.defineProperty(URL, 'createObjectURL', original); else delete (URL as unknown as Record<string, unknown>).createObjectURL; }
 });
+test('revokes temporary download URLs even if the browser click fails', () => {
+  vi.useFakeTimers();
+  const create = Object.getOwnPropertyDescriptor(URL, 'createObjectURL');
+  const revoke = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL');
+  const release = vi.fn();
+  Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: () => 'blob:test' });
+  Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: release });
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { throw new Error('blocked'); });
+  try {
+    expect(() => downloadBackup([])).toThrow('blocked');
+    vi.runAllTimers();
+    expect(release).toHaveBeenCalledWith('blob:test');
+  } finally {
+    for (const [key, descriptor] of [['createObjectURL', create], ['revokeObjectURL', revoke]] as const) {
+      if (descriptor) Object.defineProperty(URL, key, descriptor);
+      else delete (URL as unknown as Record<string, unknown>)[key];
+    }
+    vi.useRealTimers();
+  }
+});

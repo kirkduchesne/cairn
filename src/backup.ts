@@ -26,8 +26,8 @@ export function downloadBackup(issues: Issue[], scope: 'all' | 'visible' = 'all'
   const link = document.createElement('a');
   link.href = url;
   link.download = backupFilename(scope);
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  try { link.click(); }
+  finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
 }
 
 export function mergeBackup(current: Issue[], incoming: Issue[]): Issue[] {
