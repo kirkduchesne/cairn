@@ -85,6 +85,8 @@ export function App() {
   const [importMessage, setImportMessage] = useState('');
   const [pendingImport, setPendingImport] = useState<Issue[] | null>(null);
 
+  const importNewCount = pendingImport?.filter(incoming => !issues.some(issue => issue.id === incoming.id)).length ?? 0;
+
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!title.trim()) {
@@ -202,8 +204,8 @@ export function App() {
           catch { setPendingImport(null); setImportMessage('Backup is invalid or exceeds the list limit. Nothing was changed.'); }
         }}>Preview backup</button>
         {pendingImport && <div className="space-y-2 rounded border p-3">
-          <p>Backup contains {pendingImport.length} issues. Existing IDs will be skipped.</p>
-          <button type="button" onClick={() => {
+          <p>Backup contains {pendingImport.length} issues: {importNewCount} new, {pendingImport.length - importNewCount} existing IDs to skip. Counts reflect the current list.</p>
+          <button type="button" disabled={issues.length + importNewCount > 500} onClick={() => {
             try {
               const next = mergeBackup(issues, pendingImport);
               if (!setIssues(next)) return;
