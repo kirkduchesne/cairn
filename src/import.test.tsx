@@ -24,3 +24,11 @@ test('external changes after preview prevent confirmation from overwriting them'
   expect(localStorage.getItem(storageKey)).toBe('[]');
   expect(screen.getByText(/Saved issues changed in another tab/)).toBeTruthy();
 });
+test('confirmation and cancellation restore backup input focus', () => {
+  render(<App />); preview();
+  fireEvent.click(screen.getByText('Cancel import'));
+  expect(document.activeElement).toBe(screen.getByLabelText('Backup JSON'));
+  preview();
+  fireEvent.click(screen.getByText('Import new issues'));
+  expect(document.activeElement).toBe(screen.getByLabelText('Backup JSON'));
+});

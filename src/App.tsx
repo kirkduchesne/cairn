@@ -13,6 +13,7 @@ export function App() {
   const savedSnapshot = useRef(initial.raw);
   const titleInput = useRef<HTMLInputElement>(null);
   const searchInput = useRef<HTMLInputElement>(null);
+  const backupInput = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
       const target = shortcutTarget(event);
@@ -189,7 +190,7 @@ export function App() {
         <label>
           Backup JSON
           <textarea
-            value={backupText}
+            ref={backupInput} value={backupText}
             onChange={(event) => { setBackupText(event.target.value); setPendingImport(null); }}
             rows={4}
             maxLength={1000000}
@@ -210,10 +211,10 @@ export function App() {
               const next = mergeBackup(issues, pendingImport);
               if (!setIssues(next)) return;
               setImportMessage(`Added ${next.length - issues.length} issues; skipped ${pendingImport.length - (next.length - issues.length)} existing IDs.`);
-              setPendingImport(null); setBackupText('');
+              setPendingImport(null); setBackupText(''); backupInput.current?.focus();
             } catch { setImportMessage('Backup exceeds the combined list limit. Nothing was changed.'); }
           }}>Import new issues</button>
-          <button type="button" onClick={() => { setPendingImport(null); setImportMessage('Import cancelled. Nothing was changed.'); }}>Cancel import</button>
+          <button type="button" onClick={() => { setPendingImport(null); setImportMessage('Import cancelled. Nothing was changed.'); backupInput.current?.focus(); }}>Cancel import</button>
         </div>}
         <p role="status">{importMessage}</p>
       </details>
