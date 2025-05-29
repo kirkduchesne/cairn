@@ -96,7 +96,10 @@ test('leaves corrupt storage untouched and disables mutation', () => {
   expect(screen.getByRole('alert').textContent).toContain(
     'Changes are disabled',
   );
-  expect((screen.getByLabelText('Title').closest('fieldset') as HTMLFieldSetElement).disabled).toBe(true);
+  expect(
+    (screen.getByLabelText('Title').closest('fieldset') as HTMLFieldSetElement)
+      .disabled,
+  ).toBe(true);
   expect(localStorage.getItem(storageKey)).toBe('{broken');
 });
 
@@ -225,10 +228,14 @@ test('updates the live announcement for consecutive identical actions', () => {
 });
 test('keyboard shortcuts move focus without changing entered text', () => {
   render(<App />);
-  fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Draft text' } });
+  fireEvent.change(screen.getByLabelText('Title'), {
+    target: { value: 'Draft text' },
+  });
   fireEvent.keyDown(window, { key: 'f', altKey: true });
   expect(document.activeElement).toBe(screen.getByLabelText('Search issues'));
   fireEvent.keyDown(window, { key: 'n', altKey: true });
   expect(document.activeElement).toBe(screen.getByLabelText('Title'));
-  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Draft text');
+  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe(
+    'Draft text',
+  );
 });

@@ -15,19 +15,28 @@ export function parseBackup(raw: string): Issue[] {
   return parseIssues(JSON.stringify(data.issues));
 }
 
-export function backupFilename(scope: 'all' | 'visible', now = new Date()): string {
+export function backupFilename(
+  scope: 'all' | 'visible',
+  now = new Date(),
+): string {
   return `issue-desk-${scope}-${now.toISOString().slice(0, 10)}.json`;
 }
 
-export function downloadBackup(issues: Issue[], scope: 'all' | 'visible' = 'all') {
+export function downloadBackup(
+  issues: Issue[],
+  scope: 'all' | 'visible' = 'all',
+) {
   const url = URL.createObjectURL(
     new Blob([serializeBackup(issues)], { type: 'application/json' }),
   );
   const link = document.createElement('a');
   link.href = url;
   link.download = backupFilename(scope);
-  try { link.click(); }
-  finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  try {
+    link.click();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 }
 
 export function mergeBackup(current: Issue[], incoming: Issue[]): Issue[] {

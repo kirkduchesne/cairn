@@ -6,7 +6,9 @@ beforeEach(() => localStorage.clear());
 test('refuses concurrent changes without overwriting them', () => {
   const initial = loadViews();
   localStorage.setItem(viewsKey, '[]');
-  expect(() => persistViews([{ id: '1', name: 'View', query: defaultQuery }], initial.raw)).toThrow('another tab');
+  expect(() =>
+    persistViews([{ id: '1', name: 'View', query: defaultQuery }], initial.raw),
+  ).toThrow('another tab');
   expect(localStorage.getItem(viewsKey)).toBe('[]');
 });
 test('preserves corrupt view storage for recovery', () => {
