@@ -179,7 +179,7 @@ export function App() {
       </header>
       <section
         aria-label="Issue summary"
-        className="mb-5 grid grid-cols-2 gap-3 rounded bg-white p-4 sm:grid-cols-4"
+        className="mb-5 grid grid-cols-2 gap-3 rounded bg-white p-4 sm:grid-cols-5"
       >
         <p>Unfinished high priority: {counts.attention}</p>
         <p>Total: {counts.total}</p>
@@ -197,156 +197,152 @@ export function App() {
           </button>
         ))}
       </section>
-      <details className="mb-5 rounded bg-white p-4">
-        <summary>Keyboard help</summary>
-        <p>
-          Alt+N focuses the issue title. Alt+F focuses search. Tab moves between
-          controls; Space selects checkboxes. Browser or system shortcuts may
-          take precedence.
-        </p>
-      </details>
-      <details className="mb-3 rounded bg-white p-4">
-        <summary className="font-semibold">Reusable views</summary>
-        <SavedViews
-          query={{
-            text: query,
-            status: filter,
-            priority: priorityFilter,
-            order,
-          }}
-          onApply={(view) => {
-            setQuery(view.text);
-            setFilter(view.status);
-            setPriorityFilter(view.priority);
-            setOrder(view.order);
-          }}
-        />
-      </details>
-      <details className="mb-5 rounded bg-white p-4">
-        <summary className="font-semibold">Backups</summary>
-        <div className="mb-5">
-          <button
-            type="button"
-            disabled={Boolean(initial.error)}
-            onClick={() => {
-              try {
-                downloadBackup(issues);
-                setExportMessage(
-                  'Backup download requested. Check your browser downloads.',
-                );
-              } catch {
-                setExportMessage(
-                  'Backup download could not start. Check browser download permissions and try again. Your issues are unchanged.',
-                );
-              }
+      <div className="mb-5 grid items-start gap-3 sm:grid-cols-2">
+        <details className="rounded bg-white p-4">
+          <summary className="font-semibold">Reusable views</summary>
+          <SavedViews
+            query={{
+              text: query,
+              status: filter,
+              priority: priorityFilter,
+              order,
             }}
-          >
-            Export backup
-          </button>
-          <button
-            type="button"
-            disabled={Boolean(initial.error) || visible.length === 0}
-            onClick={() => {
-              try {
-                downloadBackup(visible, 'visible');
-                setExportMessage(
-                  `Requested backup of ${visible.length} visible issues.`,
-                );
-              } catch {
-                setExportMessage(
-                  'Filtered backup could not start. Your issues are unchanged.',
-                );
-              }
+            onApply={(view) => {
+              setQuery(view.text);
+              setFilter(view.status);
+              setPriorityFilter(view.priority);
+              setOrder(view.order);
             }}
-          >
-            Export visible issues
-          </button>
-          <p role="status" className="mt-2 text-sm">
-            {exportMessage}
-          </p>
-        </div>
-        <details className="mb-5 rounded bg-white p-4">
-          <summary>Restore a backup</summary>
-          <label>
-            Backup JSON
-            <textarea
-              ref={backupInput}
-              value={backupText}
-              onChange={(event) => {
-                setBackupText(event.target.value);
-                setPendingImport(null);
-              }}
-              rows={4}
-              maxLength={1000000}
-            />
-          </label>
-          <p className="my-2 text-sm">
-            Only new issue IDs are added. Existing issues are never replaced.
-            Maximum 500 issues and one million backup characters.
-          </p>
-          <button
-            type="button"
-            disabled={Boolean(initial.error)}
-            onClick={() => {
-              try {
-                setPendingImport(parseBackup(backupText));
-                setImportMessage('Backup validated. Review before importing.');
-              } catch {
-                setPendingImport(null);
-                setImportMessage(
-                  'Backup is invalid or exceeds the list limit. Nothing was changed.',
-                );
-              }
-            }}
-          >
-            Preview backup
-          </button>
-          {pendingImport && (
-            <div className="space-y-2 rounded border p-3">
-              <p>
-                Backup contains {pendingImport.length} issues: {importNewCount}{' '}
-                new, {pendingImport.length - importNewCount} existing IDs to
-                skip. Counts reflect the current list.
-              </p>
-              <button
-                type="button"
-                disabled={issues.length + importNewCount > 500}
-                onClick={() => {
-                  try {
-                    const next = mergeBackup(issues, pendingImport);
-                    if (!setIssues(next)) return;
-                    setImportMessage(
-                      `Added ${next.length - issues.length} issues; skipped ${
-                        pendingImport.length - (next.length - issues.length)
-                      } existing IDs.`,
-                    );
-                    setPendingImport(null);
-                    setBackupText('');
-                    backupInput.current?.focus();
-                  } catch {
-                    setImportMessage(
-                      'Backup exceeds the combined list limit. Nothing was changed.',
-                    );
-                  }
-                }}
-              >
-                Import new issues
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPendingImport(null);
-                  setImportMessage('Import cancelled. Nothing was changed.');
-                  backupInput.current?.focus();
-                }}
-              >
-                Cancel import
-              </button>
-            </div>
-          )}
-          <p role="status">{importMessage}</p>
+          />
         </details>
-      </details>
+        <details className="rounded bg-white p-4">
+          <summary className="font-semibold">Backups</summary>
+          <div className="mb-5">
+            <button
+              type="button"
+              disabled={Boolean(initial.error)}
+              onClick={() => {
+                try {
+                  downloadBackup(issues);
+                  setExportMessage(
+                    'Backup download requested. Check your browser downloads.',
+                  );
+                } catch {
+                  setExportMessage(
+                    'Backup download could not start. Check browser download permissions and try again. Your issues are unchanged.',
+                  );
+                }
+              }}
+            >
+              Export backup
+            </button>
+            <button
+              type="button"
+              disabled={Boolean(initial.error) || visible.length === 0}
+              onClick={() => {
+                try {
+                  downloadBackup(visible, 'visible');
+                  setExportMessage(
+                    `Requested backup of ${visible.length} visible issues.`,
+                  );
+                } catch {
+                  setExportMessage(
+                    'Filtered backup could not start. Your issues are unchanged.',
+                  );
+                }
+              }}
+            >
+              Export visible issues
+            </button>
+            <p role="status" className="mt-2 text-sm">
+              {exportMessage}
+            </p>
+          </div>
+          <details className="mb-5 rounded bg-white p-4">
+            <summary>Restore a backup</summary>
+            <label>
+              Backup JSON
+              <textarea
+                ref={backupInput}
+                value={backupText}
+                onChange={(event) => {
+                  setBackupText(event.target.value);
+                  setPendingImport(null);
+                }}
+                rows={4}
+                maxLength={5000000}
+              />
+            </label>
+            <p className="my-2 text-sm">
+              Only new issue IDs are added. Existing issues are never replaced.
+              Maximum 500 issues and five million backup characters.
+            </p>
+            <button
+              type="button"
+              disabled={Boolean(initial.error)}
+              onClick={() => {
+                try {
+                  setPendingImport(parseBackup(backupText));
+                  setImportMessage(
+                    'Backup validated. Review before importing.',
+                  );
+                } catch {
+                  setPendingImport(null);
+                  setImportMessage(
+                    'Backup is invalid or exceeds the list limit. Nothing was changed.',
+                  );
+                }
+              }}
+            >
+              Preview backup
+            </button>
+            {pendingImport && (
+              <div className="space-y-2 rounded border p-3">
+                <p>
+                  Backup contains {pendingImport.length} issues:{' '}
+                  {importNewCount} new, {pendingImport.length - importNewCount}{' '}
+                  existing IDs to skip. Counts reflect the current list.
+                </p>
+                <button
+                  type="button"
+                  disabled={issues.length + importNewCount > 500}
+                  onClick={() => {
+                    try {
+                      const next = mergeBackup(issues, pendingImport);
+                      if (!setIssues(next)) return;
+                      setImportMessage(
+                        `Added ${next.length - issues.length} issues; skipped ${
+                          pendingImport.length - (next.length - issues.length)
+                        } existing IDs.`,
+                      );
+                      setPendingImport(null);
+                      setBackupText('');
+                      backupInput.current?.focus();
+                    } catch {
+                      setImportMessage(
+                        'Backup exceeds the combined list limit. Nothing was changed.',
+                      );
+                    }
+                  }}
+                >
+                  Import new issues
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingImport(null);
+                    setImportMessage('Import cancelled. Nothing was changed.');
+                    backupInput.current?.focus();
+                  }}
+                >
+                  Cancel import
+                </button>
+              </div>
+            )}
+            <p role="status">{importMessage}</p>
+          </details>
+        </details>
+      </div>
       {storageError && (
         <p role="alert" className="mb-4 rounded bg-red-100 p-4 text-red-900">
           {storageError}
@@ -443,30 +439,30 @@ export function App() {
                 <option>Done</option>
               </select>
             </label>
+            <label>
+              Sort issues
+              <select
+                value={order}
+                onChange={(event) => setOrder(event.target.value)}
+              >
+                <option>Added</option>
+                <option>Priority</option>
+                <option>Title</option>
+              </select>
+            </label>
+            <label>
+              Filter priority
+              <select
+                value={priorityFilter}
+                onChange={(event) => setPriorityFilter(event.target.value)}
+              >
+                <option>All</option>
+                <option>Low</option>
+                <option>Normal</option>
+                <option>High</option>
+              </select>
+            </label>
           </div>
-          <label>
-            Sort issues
-            <select
-              value={order}
-              onChange={(event) => setOrder(event.target.value)}
-            >
-              <option>Added</option>
-              <option>Priority</option>
-              <option>Title</option>
-            </select>
-          </label>
-          <label>
-            Filter priority
-            <select
-              value={priorityFilter}
-              onChange={(event) => setPriorityFilter(event.target.value)}
-            >
-              <option>All</option>
-              <option>Low</option>
-              <option>Normal</option>
-              <option>High</option>
-            </select>
-          </label>
           <button
             type="button"
             onClick={() => {
@@ -629,6 +625,7 @@ export function App() {
               <button
                 type="button"
                 aria-label={'Edit ' + issue.title}
+                className="mr-2"
                 onClick={() => {
                   titleInput.current?.focus();
                   setEditing(issue.id);
@@ -665,6 +662,14 @@ export function App() {
           ))}
         </section>
       </fieldset>
+      <details className="mb-5 rounded bg-white p-4">
+        <summary>Keyboard help</summary>
+        <p>
+          Alt+N focuses the issue title. Alt+F focuses search. Tab moves between
+          controls; Space selects checkboxes. Browser or system shortcuts may
+          take precedence.
+        </p>
+      </details>
     </main>
   );
 }

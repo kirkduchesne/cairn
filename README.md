@@ -1,14 +1,13 @@
 # Issue Desk
 
-A small browser-local issue tracker with priorities, sorting, and JSON backups.
+A browser-local issue tracker for a small personal backlog. Organize work with
+reusable views, change several issues together, and keep portable JSON backups.
 
-Created in September 2026 as a reconstruction of incremental development using
-technology available in 2023–2024. Historical author and committer dates were
-intentionally assigned; they do not establish original publication in those years.
+![Issue Desk with a sample personal backlog](docs/preview.png)
 
 ## Run
 
-Use Node 20, then:
+Use Node 20 and npm:
 
 ```sh
 npm ci
@@ -17,63 +16,66 @@ npm test
 npm run build
 ```
 
-The development server binds to loopback. No account, API, or server database is
-required. Keep one active tab and avoid storing sensitive information.
+The development server binds to loopback. The app needs no account, backend, or
+external service. React 18.3, TypeScript 5.8, Vite 6.2, and Tailwind 3.4 keep the
+implementation small; dependencies are pinned in the lockfile.
 
-## Workflow and storage
+## Work with issues
 
-Add a title (100 characters), notes (1,000 characters), and priority. Edit details,
-change status, search, filter, sort, or delete with confirmation. Up to 500 issues
-can be added. Existing larger legacy lists remain readable and exportable.
+- Add titles, notes, status, and priority. Search and combine status/priority
+  filters, then sort by title, priority, or original order.
+- Save up to 12 named views. Apply, rename, update, or delete a view without
+  changing the issues. Reset filters returns to the complete list.
+- Select visible issues and apply one status or priority in a single storage
+  write. Filtering clears selection. Finish editing before a batch action.
+- Undo the last successful batch operation. A later issue edit, import, or
+  deletion invalidates undo; no-op batches keep it available.
+- Use the summary to see overall status and unfinished high-priority counts.
+  Summary buttons open the corresponding status view.
+- Alt+N focuses the title; Alt+F focuses search. Keyboard help lists these
+  shortcuts. Browser and system shortcuts can take precedence.
 
-The original `issue-desk-v1` storage key is retained. Older records receive Normal
-priority and an unknown update time; no historical timestamp is invented. Reading
-does not rewrite storage. Changes persist only after a successful write. Invalid
-storage disables changes and is never replaced automatically. If saved data has
-changed in another tab, export this tab's list and reload before continuing.
-The check prevents ordinary stale writes, but localStorage is not a transactional
-multi-user database. Clearing browser data removes the list.
+## Backups and limits
 
-Export downloads a version 1 JSON backup. Restore by pasting that JSON into the
-backup field. Imports validate the whole file before writing, accept at most one
-million characters, and add only IDs not already present. Matching IDs are skipped,
-never overwritten. The result reports added and skipped counts. This is an additive
-restore; it does not undo deletions or replace changed existing issues. Export the
-current list before reorganizing it. Import does not merge fields across versions.
+Export the complete list or only visible results. Filenames include the scope
+and UTC date. Restore by pasting JSON, previewing new/skipped counts, and
+confirming. Imports add only unseen IDs; existing IDs are never replaced.
+Canceling the preview writes nothing. Issue backups do not include saved views.
 
-## Compatibility and verification
+The app accepts 500 issues, 100-character titles, 1,000-character notes, and
+five-million-character backups. Larger legacy lists remain readable; export
+filtered subsets of at most 500 issues before reorganizing them. Export uses the
+same validation as import and refuses files that could not be restored. View names allow 40 characters and must be unique ignoring case;
+search allows 200 characters.
 
-The original 2023 history is preserved. January 11, 2024 introduces Vite 5.0.11,
-TypeScript 5.3.3, Tailwind 3.4.1 and Node 20. November 21 updates React to 18.3.1 and
-Vite to 5.4.11. Lockfile publication dates were audited at each introducing cutoff,
-including transitive dependencies. Runtime tests use Node 20.19.0, a later Node 20
-maintenance release; browser checks use current Chrome.
+Issues retain the original `issue-desk-v1` key. Views use `issue-desk-views-v1`.
+Legacy issues receive Normal priority and an unknown update time. Invalid storage
+is preserved. Failed writes retain the current data and entered form. Writes
+check for changes made since this tab loaded or last saved; if a conflict occurs,
+export your current list and reload. This is a stale-write check, not a
+transactional synchronization system. Use one active tab. Clearing browser data
+removes your work, so export backups and avoid sensitive information.
 
-Tests cover existing records, issue actions, priorities, backup validation and
-merging, corrupt storage, write failures, and changes made by another tab.
+## Verification
 
-This historical toolchain has known advisories. Upgrade dependencies before using
-it for a current public service. The local app is not a shared issue-management
-system and has no automatic backup or synchronization.
+Unit/component tests cover filters, view validation and persistence, migrations,
+batch writes and undo, keyboard handling, import previews, export errors, and
+storage conflicts. `tests/browser.cjs` exercises the actual UI with external
+Playwright and Chrome against `ISSUE_TEST_URL` (default `http://127.0.0.1:8502`).
+It checks reload persistence, views, batch undo, downloads, imports, keyboard
+focus, and 375px layouts including maximum-length text. CI runs tests and build.
+The screenshot shows nonpersonal sample issues entered through the UI.
 
-## Reusable views
+## Project history
 
-Save up to 12 named combinations of search, status, priority, and sort order.
-Choose a view to apply it, then explicitly update it after changing filters.
-Renaming and deleting views never change issues. Names are limited to 40 characters
-and must be unique ignoring case. Search is limited to 200 characters.
+- **2023:** Basic typed React issue list with local persistence.
+- **2024:** Priorities, timestamps, backups, storage protection, and recovery tests.
+- **2025:** Reusable views, safe batch operations, summaries, keyboard controls,
+  and previewed imports. The April dependency upgrade was checked against
+  registry publication dates, including transitive packages.
 
-Views use separate browser storage (`issue-desk-views-v1`). Invalid data is kept
-untouched; conflicting changes from another tab require a reload. Issue backups
-contain issues, not view definitions. Reset filters returns to the complete list.
-
-## Batch changes
-
-Select issues individually or select the visible results, then apply one status or
-priority. Each action writes the entire list once; a failed write leaves the list
-and selection intact. Filtering clears selection so hidden issues are not changed.
-Finish editing an issue before running a batch action.
-
-Undo reverses only the last successful batch change. A later issue edit, import,
-or deletion invalidates undo. No-op batches keep the previous undo. Unseen storage
-changes are never overwritten by undo; reload after exporting the current list.
+Created in September 2026 as a reconstruction using technology available in the
+assigned periods. Historical author and committer dates were intentionally
+assigned and do not establish original publication in those years. Verification
+used Node 20.19.0 and current Chrome. This period-specific toolchain has known
+advisories; upgrade it before adapting the project for a current public service.

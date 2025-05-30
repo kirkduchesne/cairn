@@ -23,10 +23,36 @@ test('rejects bad versions priorities and timestamps', () => {
   }
 });
 test('rejects oversized input and combined lists', () => {
-  expect(() => parseBackup(' '.repeat(1000001))).toThrow();
+  expect(() => parseBackup(' '.repeat(5000001))).toThrow();
   const many = Array.from({ length: 500 }, (_, index) => ({
     ...issues[0],
     id: String(index),
   }));
   expect(() => mergeBackup(many, [{ ...issues[0], id: 'extra' }])).toThrow();
+});
+
+test('round trips 500 issues with maximum JSON-escaped content', () => {
+  const large = Array.from({ length: 500 }, (_, index) => ({
+    ...issues[0],
+    id: String(index),
+    title: 'x'.repeat(100),
+    notes: '\u0000'.repeat(1000),
+  }));
+  const raw = serializeBackup(large);
+  expect(raw.length).toBeGreaterThan(1000000);
+  expect(parseBackup(raw)).toEqual(large);
+});
+
+test('refuses exports that exceed the same limits used for import', () => {
+  expect(() =>
+    serializeBackup(
+      Array.from({ length: 501 }, (_, index) => ({
+        ...issues[0],
+        id: String(index),
+      })),
+    ),
+  ).toThrow('500 issues');
+  expect(() =>
+    serializeBackup([{ ...issues[0], id: 'x'.repeat(5000000) }]),
+  ).toThrow('five million');
 });
