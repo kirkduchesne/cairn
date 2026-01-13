@@ -239,3 +239,11 @@ test('keyboard shortcuts move focus without changing entered text', () => {
     'Draft text',
   );
 });
+
+test('accepts maximum fields and rejects oversized legacy fields', () => {
+  const issue = { id: 'a', title: 'x'.repeat(100), notes: 'n'.repeat(1000), status: 'Open' };
+  expect(parseIssues(JSON.stringify([issue]))[0].priority).toBe('Normal');
+  expect(() => parseIssues(JSON.stringify([{ ...issue, title: issue.title + 'x' }]))).toThrow();
+  expect(() => parseIssues(JSON.stringify([{ ...issue, notes: issue.notes + 'x' }]))).toThrow();
+  expect(() => parseIssues(JSON.stringify([{ ...issue, updatedAt: 'not a date' }]))).toThrow();
+});
