@@ -247,3 +247,15 @@ test('accepts maximum fields and rejects oversized legacy fields', () => {
   expect(() => parseIssues(JSON.stringify([{ ...issue, notes: issue.notes + 'x' }]))).toThrow();
   expect(() => parseIssues(JSON.stringify([{ ...issue, updatedAt: 'not a date' }]))).toThrow();
 });
+
+test('retains an edited issue when its write conflicts', () => {
+  render(<App />);
+  add('Original');
+  fireEvent.click(screen.getByRole('button', { name: 'Edit Original' }));
+  fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Uncommitted edit' } });
+  localStorage.setItem(storageKey, '[]');
+  fireEvent.click(screen.getByText('Save changes'));
+  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Uncommitted edit');
+  expect(screen.getByText('Original')).toBeTruthy();
+  expect(localStorage.getItem(storageKey)).toBe('[]');
+});
