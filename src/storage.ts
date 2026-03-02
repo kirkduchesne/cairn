@@ -1,5 +1,7 @@
+import { normalizeTags } from './tags';
 export type Issue = {
   id: string;
+  tags?: string[];
   title: string;
   notes: string;
   updatedAt: string | null;
@@ -37,6 +39,7 @@ export function parseIssues(raw: string | null): Issue[] {
   }
   return data.map((item) => ({
     ...item,
+    ...(item.tags === undefined ? {} : { tags: normalizeTags(item.tags) }),
     priority: item.priority ?? 'Normal',
     updatedAt: item.updatedAt ?? null,
   }));
