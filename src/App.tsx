@@ -1,3 +1,4 @@
+import { normalizeTags } from './tags';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
@@ -61,6 +62,7 @@ export function App() {
       return false;
     }
   }
+  const [tags, setTags] = useState('');
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<Issue['priority']>('Normal');
@@ -125,6 +127,13 @@ export function App() {
       );
       return;
     }
+    let parsedTags: string[];
+    try {
+      parsedTags = normalizeTags(tags.split(','));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Invalid tags.');
+      return;
+    }
     if (editing) {
       if (
         !setIssues(
@@ -132,6 +141,7 @@ export function App() {
             issue.id === editing
               ? {
                   ...issue,
+                  tags: parsedTags,
                   title: title.trim(),
                   notes: notes.trim(),
                   priority,
@@ -147,6 +157,7 @@ export function App() {
         ...issues,
         {
           id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          tags: parsedTags,
           title: title.trim(),
           notes: notes.trim(),
           status: 'Open',
@@ -160,6 +171,7 @@ export function App() {
     titleInput.current?.focus();
     setEditing(null);
     setTitle('');
+    setTags('');
     setNotes('');
     setPriority('Normal');
     setError('');
@@ -380,6 +392,10 @@ export function App() {
             />
           </label>
           <label>
+            Tags (comma separated)
+            <input value={tags} maxLength={128} onChange={(event) => setTags(event.target.value)} />
+          </label>
+          <label>
             Priority
             <select
               value={priority}
@@ -406,6 +422,7 @@ export function App() {
               onClick={() => {
                 setEditing(null);
                 setTitle('');
+    setTags('');
                 setNotes('');
                 setPriority('Normal');
                 setError('');
@@ -630,6 +647,7 @@ export function App() {
                   titleInput.current?.focus();
                   setEditing(issue.id);
                   setTitle(issue.title);
+                  setTags((issue.tags ?? []).join(', '));
                   setNotes(issue.notes);
                   setPriority(issue.priority);
                   setError('');
@@ -650,6 +668,7 @@ export function App() {
                   if (editing === issue.id) {
                     setEditing(null);
                     setTitle('');
+    setTags('');
                     setNotes('');
                     setPriority('Normal');
                     setError('');
