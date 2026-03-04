@@ -609,6 +609,9 @@ export function App() {
                 />
                 Select issue
               </label>
+              <ul aria-label={'Tags for ' + issue.title} className="flex flex-wrap gap-1">
+                {(issue.tags ?? []).map((tag) => <li key={tag} className="break-all rounded bg-indigo-50 px-2 py-1 text-xs">{tag}</li>)}
+              </ul>
               <h2 className="break-words text-xl font-semibold">
                 {issue.title}
               </h2>
