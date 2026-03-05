@@ -17,6 +17,7 @@ export function parseViews(raw: string | null): SavedView[] {
         !view.name.trim() ||
         view.name.length > 40 ||
         !view.query ||
+        (view.query.tag !== undefined && (typeof view.query.tag !== 'string' || view.query.tag.length > 24)) ||
         typeof view.query.text !== 'string' ||
         view.query.text.length > 200 ||
         !['All', 'Open', 'In progress', 'Done'].includes(view.query.status) ||

@@ -66,11 +66,13 @@ export function App() {
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<Issue['priority']>('Normal');
+  const [tagFilter, setTagFilter] = useState('');
   const [filter, setFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [query, setQuery] = useState('');
   const [order, setOrder] = useState('Added');
   const visible = queryIssues(issues, {
+    tag: tagFilter,
     text: query,
     status: filter,
     priority: priorityFilter,
@@ -79,7 +81,7 @@ export function App() {
   const [selected, setSelected] = useState<string[]>([]);
   useEffect(() => {
     setSelected([]);
-  }, [query, filter, priorityFilter, order]);
+  }, [query, filter, priorityFilter, order, tagFilter]);
   const [batchStatus, setBatchStatus] = useState<Issue['status']>('Done');
   const [batchPriority, setBatchPriority] = useState<Issue['priority']>('High');
   function applyBatch(patch: Partial<Pick<Issue, 'status' | 'priority'>>) {
@@ -214,12 +216,14 @@ export function App() {
           <summary className="font-semibold">Reusable views</summary>
           <SavedViews
             query={{
-              text: query,
+              tag: tagFilter,
+    text: query,
               status: filter,
               priority: priorityFilter,
               order,
             }}
             onApply={(view) => {
+              setTagFilter(view.tag ?? '');
               setQuery(view.text);
               setFilter(view.status);
               setPriorityFilter(view.priority);
@@ -445,6 +449,13 @@ export function App() {
               />
             </label>
             <label>
+              Filter tag
+              <select value={tagFilter} onChange={(event) => setTagFilter(event.target.value)}>
+                <option value="">All tags</option>
+                {[...new Set([...issues.flatMap((issue) => issue.tags ?? []), ...(tagFilter ? [tagFilter] : [])])].sort().map((tag) => <option key={tag}>{tag}</option>)}
+              </select>
+            </label>
+            <label>
               Filter status
               <select
                 value={filter}
@@ -487,6 +498,7 @@ export function App() {
               setFilter('All');
               setPriorityFilter('All');
               setOrder('Added');
+              setTagFilter('');
             }}
           >
             Reset filters
