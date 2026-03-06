@@ -21,7 +21,7 @@ export function queryIssues(issues: Issue[], query: Query): Issue[] {
       (!query.tag || (issue.tags ?? []).includes(query.tag)) &&
       (query.status === 'All' || issue.status === query.status) &&
       (query.priority === 'All' || issue.priority === query.priority) &&
-      (issue.title + ' ' + issue.notes).toLowerCase().includes(text),
+      [issue.title, issue.notes, ...(issue.tags ?? [])].join(' ').toLowerCase().includes(text),
   );
   if (query.order === 'Priority') {
     const rank = { High: 0, Normal: 1, Low: 2 };
