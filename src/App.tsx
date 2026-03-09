@@ -452,7 +452,7 @@ export function App() {
               Filter tag
               <select value={tagFilter} onChange={(event) => setTagFilter(event.target.value)}>
                 <option value="">All tags</option>
-                {[...new Set([...issues.flatMap((issue) => issue.tags ?? []), ...(tagFilter ? [tagFilter] : [])])].sort().map((tag) => <option key={tag}>{tag}</option>)}
+                {[...new Set([...issues.flatMap((issue) => issue.tags ?? []), ...(tagFilter ? [tagFilter] : [])])].sort().map((tag) => <option key={tag} value={tag}>{tag} ({issues.filter((issue) => (issue.tags ?? []).includes(tag)).length})</option>)}
               </select>
             </label>
             <label>
