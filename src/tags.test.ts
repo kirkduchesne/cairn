@@ -14,3 +14,8 @@ test('searches tags without case sensitivity and combines tag filters', () => {
   expect(queryIssues(issues, { ...defaultQuery, text: 'BROWSER', tag: 'browser' })).toHaveLength(1);
   expect(queryIssues(issues, { ...defaultQuery, tag: 'other' })).toHaveLength(0);
 });
+import { parseBackup, serializeBackup } from './backup';
+test('roundtrips maximum escaped tag names', () => {
+  const issues = parseIssues(JSON.stringify([{ id: '1', title: 'Task', notes: '', status: 'Open', tags: ['"'.repeat(24), '\\'.repeat(24), 'c', 'd', 'e'] }]));
+  expect(parseBackup(serializeBackup(issues))).toEqual(issues);
+});

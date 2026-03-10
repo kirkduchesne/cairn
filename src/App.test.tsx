@@ -259,3 +259,16 @@ test('retains an edited issue when its write conflicts', () => {
   expect(screen.getByText('Original')).toBeTruthy();
   expect(localStorage.getItem(storageKey)).toBe('[]');
 });
+
+test('persists tags through editing and reload', () => {
+  const view = render(<App />);
+  fireEvent.change(screen.getByLabelText('Tags (comma separated)'), { target: { value: 'Web, BUG, web' } });
+  add('Tagged issue');
+  expect(JSON.parse(localStorage.getItem(storageKey)!)[0].tags).toEqual(['web', 'bug']);
+  fireEvent.click(screen.getByRole('button', { name: 'Edit Tagged issue' }));
+  expect((screen.getByLabelText('Tags (comma separated)') as HTMLInputElement).value).toBe('web, bug');
+  view.unmount();
+  render(<App />);
+  fireEvent.change(screen.getByLabelText('Filter tag'), { target: { value: 'web' } });
+  expect(screen.getByText('Tagged issue')).toBeTruthy();
+});
