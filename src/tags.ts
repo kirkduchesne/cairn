@@ -9,3 +9,16 @@ export function normalizeTags(value: unknown): string[] {
   }
   return unique;
 }
+
+import { Issue } from './storage';
+export function tagSelected(issues: Issue[], ids: string[], tag: string, remove = false): Issue[] {
+  const [name] = normalizeTags([tag]);
+  if (!name) throw new Error('Enter a tag name.');
+  return issues.map((issue) => {
+    if (!ids.includes(issue.id)) return issue;
+    const before = issue.tags ?? [];
+    const tags = remove ? before.filter((value) => value !== name) : normalizeTags([...before, name]);
+    if (JSON.stringify(tags) === JSON.stringify(before)) return issue;
+    return { ...issue, tags, updatedAt: new Date().toISOString() };
+  });
+}

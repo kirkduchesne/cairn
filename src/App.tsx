@@ -1,4 +1,4 @@
-import { normalizeTags } from './tags';
+import { normalizeTags, tagSelected } from './tags';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
@@ -60,6 +60,20 @@ export function App() {
         'Could not save changes. Free browser storage and try again.',
       );
       return false;
+    }
+  }
+  const [batchTag, setBatchTag] = useState('');
+  function applyTag(remove = false) {
+    try {
+      const next = tagSelected(issues, selectedVisible.map((issue) => issue.id), batchTag, remove);
+      if (next.every((issue, index) => issue === issues[index])) {
+        announce('Selected tags already match.');
+      } else if (setIssues(next)) {
+        setUndo(issues);
+        announce('Selected issue tags updated.');
+      }
+    } catch (error) {
+      announce(error instanceof Error ? error.message : 'Tags could not be changed.');
     }
   }
   const [tags, setTags] = useState('');
@@ -523,6 +537,11 @@ export function App() {
               issues. Status target: {batchStatus}; priority target:{' '}
               {batchPriority}.
             </p>
+            <label>
+              Batch tag
+              <input value={batchTag} maxLength={24} onChange={(event) => setBatchTag(event.target.value)} />
+            </label>
+            <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyTag()}>Add tag to selected</button>
             <label>
               Batch status
               <select
