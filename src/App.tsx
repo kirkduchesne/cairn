@@ -542,6 +542,7 @@ export function App() {
               <input value={batchTag} maxLength={24} onChange={(event) => setBatchTag(event.target.value)} />
             </label>
             <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyTag()}>Add tag to selected</button>
+            <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyTag(true)}>Remove tag from selected</button>
             <label>
               Batch status
               <select
