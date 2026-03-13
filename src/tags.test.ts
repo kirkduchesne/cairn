@@ -19,3 +19,15 @@ test('roundtrips maximum escaped tag names', () => {
   const issues = parseIssues(JSON.stringify([{ id: '1', title: 'Task', notes: '', status: 'Open', tags: ['"'.repeat(24), '\\'.repeat(24), 'c', 'd', 'e'] }]));
   expect(parseBackup(serializeBackup(issues))).toEqual(issues);
 });
+import { tagSelected } from './tags';
+test('tag batch changes are pure and reject a partially valid batch', () => {
+  const issues = parseIssues(JSON.stringify([
+    { id: '1', title: 'First', notes: '', status: 'Open', tags: [] },
+    { id: '2', title: 'Full', notes: '', status: 'Open', tags: ['a','b','c','d','e'] },
+  ]));
+  const before = JSON.stringify(issues);
+  expect(() => tagSelected(issues, ['1', '2'], 'sixth')).toThrow();
+  expect(JSON.stringify(issues)).toBe(before);
+  expect(tagSelected(issues, ['2'], 'a')[1]).toBe(issues[1]);
+  expect(tagSelected(issues, ['2'], 'a', true)[1].tags).toEqual(['b','c','d','e']);
+});
