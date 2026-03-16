@@ -2,6 +2,7 @@ import { normalizeTags } from './tags';
 export type Issue = {
   id: string;
   tags?: string[];
+  archived?: boolean;
   title: string;
   notes: string;
   updatedAt: string | null;
@@ -18,6 +19,8 @@ export function parseIssues(raw: string | null): Issue[] {
     data.some(
       (item) =>
         !item ||
+        (item.archived !== undefined && typeof item.archived !== 'boolean') ||
+        (item.archived === true && item.status !== 'Done') ||
         typeof item.id !== 'string' ||
         !item.id ||
         typeof item.title !== 'string' ||
