@@ -64,6 +64,7 @@ export function App() {
   }
   const [batchTag, setBatchTag] = useState('');
   function applyTag(remove = false) {
+    if (selectedVisible.some((issue) => issue.archived)) return;
     try {
       const next = tagSelected(issues, selectedVisible.map((issue) => issue.id), batchTag, remove);
       if (next.every((issue, index) => issue === issues[index])) {
@@ -99,6 +100,7 @@ export function App() {
   const [batchStatus, setBatchStatus] = useState<Issue['status']>('Done');
   const [batchPriority, setBatchPriority] = useState<Issue['priority']>('High');
   function applyBatch(patch: Partial<Pick<Issue, 'status' | 'priority'>>) {
+    if (selectedVisible.some((issue) => issue.archived)) return;
     const ids = visible
       .filter((issue) => selected.includes(issue.id))
       .map((issue) => issue.id);
@@ -541,8 +543,8 @@ export function App() {
               Batch tag
               <input value={batchTag} maxLength={24} onChange={(event) => setBatchTag(event.target.value)} />
             </label>
-            <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyTag()}>Add tag to selected</button>
-            <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing)} onClick={() => applyTag(true)}>Remove tag from selected</button>
+            <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing) || selectedVisible.some((issue) => issue.archived)} onClick={() => applyTag()}>Add tag to selected</button>
+            <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing) || selectedVisible.some((issue) => issue.archived)} onClick={() => applyTag(true)}>Remove tag from selected</button>
             <label>
               Batch status
               <select
@@ -558,7 +560,7 @@ export function App() {
             </label>
             <button
               type="button"
-              disabled={selectedVisible.length === 0 || Boolean(editing)}
+              disabled={selectedVisible.length === 0 || Boolean(editing) || selectedVisible.some((issue) => issue.archived)}
               onClick={() => applyBatch({ status: batchStatus })}
             >
               Apply status
@@ -578,7 +580,7 @@ export function App() {
             </label>
             <button
               type="button"
-              disabled={selectedVisible.length === 0 || Boolean(editing)}
+              disabled={selectedVisible.length === 0 || Boolean(editing) || selectedVisible.some((issue) => issue.archived)}
               onClick={() => applyBatch({ priority: batchPriority })}
             >
               Apply priority
@@ -654,6 +656,7 @@ export function App() {
                 Status
                 <select
                   aria-label={'Status for ' + issue.title}
+                  disabled={Boolean(issue.archived)}
                   value={issue.status}
                   onChange={(event) =>
                     setIssues(
@@ -676,6 +679,7 @@ export function App() {
               </label>
               <button
                 type="button"
+                disabled={Boolean(issue.archived)}
                 aria-label={'Edit ' + issue.title}
                 className="mr-2"
                 onClick={() => {
@@ -690,6 +694,11 @@ export function App() {
               >
                 Edit
               </button>
+              {issue.archived ? <p>Archived · Restore this issue before editing.</p> : (
+                <button type="button" disabled={issue.status !== 'Done' || Boolean(editing)} onClick={() => {
+                  if (setIssues(issues.map((item) => item.id === issue.id ? { ...item, archived: true, updatedAt: new Date().toISOString() } : item))) announce('Issue archived.');
+                }}>Archive {issue.title}</button>
+              )}
               <button
                 type="button"
                 aria-label={'Delete ' + issue.title}
