@@ -2,6 +2,7 @@ import { Issue } from './storage';
 
 export type Query = {
   tag?: string;
+  scope?: 'Active' | 'Archived' | 'All';
   text: string;
   status: string;
   priority: string;
@@ -18,6 +19,7 @@ export function queryIssues(issues: Issue[], query: Query): Issue[] {
   const text = query.text.trim().toLowerCase();
   const result = issues.filter(
     (issue) =>
+      (query.scope === 'All' || (query.scope === 'Archived' ? Boolean(issue.archived) : !issue.archived)) &&
       (!query.tag || (issue.tags ?? []).includes(query.tag)) &&
       (query.status === 'All' || issue.status === query.status) &&
       (query.priority === 'All' || issue.priority === query.priority) &&

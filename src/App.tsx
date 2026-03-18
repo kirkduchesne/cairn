@@ -81,12 +81,14 @@ export function App() {
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<Issue['priority']>('Normal');
+  const [scope, setScope] = useState<'Active' | 'Archived' | 'All'>('Active');
   const [tagFilter, setTagFilter] = useState('');
   const [filter, setFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [query, setQuery] = useState('');
   const [order, setOrder] = useState('Added');
   const visible = queryIssues(issues, {
+    scope,
     tag: tagFilter,
     text: query,
     status: filter,
@@ -96,7 +98,7 @@ export function App() {
   const [selected, setSelected] = useState<string[]>([]);
   useEffect(() => {
     setSelected([]);
-  }, [query, filter, priorityFilter, order, tagFilter]);
+  }, [query, filter, priorityFilter, order, tagFilter, scope]);
   const [batchStatus, setBatchStatus] = useState<Issue['status']>('Done');
   const [batchPriority, setBatchPriority] = useState<Issue['priority']>('High');
   function applyBatch(patch: Partial<Pick<Issue, 'status' | 'priority'>>) {
@@ -232,13 +234,15 @@ export function App() {
           <summary className="font-semibold">Reusable views</summary>
           <SavedViews
             query={{
-              tag: tagFilter,
+              scope,
+    tag: tagFilter,
     text: query,
               status: filter,
               priority: priorityFilter,
               order,
             }}
             onApply={(view) => {
+              setScope(view.scope ?? 'Active');
               setTagFilter(view.tag ?? '');
               setQuery(view.text);
               setFilter(view.status);
@@ -465,6 +469,12 @@ export function App() {
               />
             </label>
             <label>
+              Issue scope
+              <select value={scope} onChange={(event) => setScope(event.target.value as typeof scope)}>
+                <option>Active</option><option>Archived</option><option>All</option>
+              </select>
+            </label>
+            <label>
               Filter tag
               <select value={tagFilter} onChange={(event) => setTagFilter(event.target.value)}>
                 <option value="">All tags</option>
@@ -514,6 +524,7 @@ export function App() {
               setFilter('All');
               setPriorityFilter('All');
               setOrder('Added');
+              setScope('Active');
               setTagFilter('');
             }}
           >
@@ -697,7 +708,7 @@ export function App() {
               {issue.archived ? <p>Archived · Restore this issue before editing.</p> : (
                 <button type="button" disabled={issue.status !== 'Done' || Boolean(editing)} onClick={() => {
                   if (setIssues(issues.map((item) => item.id === issue.id ? { ...item, archived: true, updatedAt: new Date().toISOString() } : item))) announce('Issue archived.');
-                }}>Archive {issue.title}</button>
+                }} aria-label={'Archive ' + issue.title}>Archive issue</button>
               )}
               <button
                 type="button"
