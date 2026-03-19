@@ -705,7 +705,12 @@ export function App() {
               >
                 Edit
               </button>
-              {issue.archived ? <p>Archived · Restore this issue before editing.</p> : (
+              {issue.archived ? <div>
+                <p>Archived · Restore this issue before editing.</p>
+                <button type="button" disabled={Boolean(editing)} aria-label={'Restore ' + issue.title} onClick={() => {
+                  if (setIssues(issues.map((item) => item.id === issue.id ? { ...item, archived: false, updatedAt: new Date().toISOString() } : item))) announce('Issue restored.');
+                }}>Restore issue</button>
+              </div> : (
                 <button type="button" disabled={issue.status !== 'Done' || Boolean(editing)} onClick={() => {
                   if (setIssues(issues.map((item) => item.id === issue.id ? { ...item, archived: true, updatedAt: new Date().toISOString() } : item))) announce('Issue archived.');
                 }} aria-label={'Archive ' + issue.title}>Archive issue</button>
