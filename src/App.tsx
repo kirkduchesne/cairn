@@ -121,6 +121,17 @@ export function App() {
       );
     }
   }
+  function archiveSelected(archived: boolean) {
+    if (editing || selectedVisible.length === 0 || (archived && selectedVisible.some((issue) => issue.status !== 'Done'))) return;
+    const next = issues.map((issue) => selected.includes(issue.id) && visible.includes(issue) && Boolean(issue.archived) !== archived
+      ? { ...issue, archived, updatedAt: new Date().toISOString() } : issue);
+    if (next.every((issue, index) => issue === issues[index])) {
+      announce('Selected archive state already matches.');
+    } else if (setIssues(next)) {
+      setUndo(issues);
+      announce(archived ? 'Selected issues archived.' : 'Selected issues restored.');
+    }
+  }
   const selectedVisible = visible.filter((issue) =>
     selected.includes(issue.id),
   );
@@ -550,6 +561,7 @@ export function App() {
               issues. Status target: {batchStatus}; priority target:{' '}
               {batchPriority}.
             </p>
+            <button type="button" disabled={!selectedVisible.length || Boolean(editing) || selectedVisible.some((issue) => issue.status !== 'Done')} onClick={() => archiveSelected(true)}>Archive selected</button>
             <label>
               Batch tag
               <input value={batchTag} maxLength={24} onChange={(event) => setBatchTag(event.target.value)} />
