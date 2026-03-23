@@ -562,6 +562,7 @@ export function App() {
               {batchPriority}.
             </p>
             <button type="button" disabled={!selectedVisible.length || Boolean(editing) || selectedVisible.some((issue) => issue.status !== 'Done')} onClick={() => archiveSelected(true)}>Archive selected</button>
+            <button type="button" disabled={!selectedVisible.length || Boolean(editing)} onClick={() => archiveSelected(false)}>Restore selected</button>
             <label>
               Batch tag
               <input value={batchTag} maxLength={24} onChange={(event) => setBatchTag(event.target.value)} />
