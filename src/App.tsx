@@ -34,7 +34,7 @@ export function App() {
   }
   const [exportMessage, setExportMessage] = useState('');
   const [issues, updateIssues] = useState<Issue[]>(initial.issues);
-  const counts = summarize(issues);
+  const counts = summarize(issues.filter((issue) => !issue.archived));
   const [storageError, setStorageError] = useState(initial.error);
 
   const [undo, setUndo] = useState<Issue[] | null>(null);
@@ -225,12 +225,15 @@ export function App() {
         className="mb-5 grid grid-cols-2 gap-3 rounded bg-white p-4 sm:grid-cols-5"
       >
         <p>Unfinished high priority: {counts.attention}</p>
-        <p>Total: {counts.total}</p>
+        <p>Active total: {counts.total}</p>
+        <button type="button" onClick={() => { setScope('Archived'); setFilter('All'); setPriorityFilter('All'); setTagFilter(''); setQuery(''); }}>Archived: {issues.filter((issue) => issue.archived).length}</button>
         {(['Open', 'In progress', 'Done'] as const).map((status) => (
           <button
             type="button"
             key={status}
             onClick={() => {
+              setScope('Active');
+              setTagFilter('');
               setQuery('');
               setPriorityFilter('All');
               setFilter(status);
