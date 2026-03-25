@@ -559,6 +559,7 @@ export function App() {
             className="space-y-3 rounded border border-slate-300 p-3"
           >
             <summary className="font-semibold">Batch tools</summary>
+            <p className="text-sm">Only completed issues can be archived. Archived issues keep their notes and tags; restore them before changing status, priority, or tags.</p>
             <p className="text-sm text-slate-600">
               Batch changes affect {selectedVisible.length} visible selected
               issues. Status target: {batchStatus}; priority target:{' '}
