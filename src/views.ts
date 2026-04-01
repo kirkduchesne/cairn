@@ -23,7 +23,7 @@ export function parseViews(raw: string | null): SavedView[] {
         view.query.text.length > 200 ||
         !['All', 'Open', 'In progress', 'Done'].includes(view.query.status) ||
         !['All', 'Low', 'Normal', 'High'].includes(view.query.priority) ||
-        !['Added', 'Priority', 'Title'].includes(view.query.order),
+        !['Added', 'Priority', 'Title', 'Newest', 'Oldest'].includes(view.query.order),
     ) ||
     new Set(data.map((view) => view.id)).size !== data.length ||
     new Set(data.map((view) => view.name.trim().toLowerCase())).size !==

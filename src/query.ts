@@ -25,7 +25,14 @@ export function queryIssues(issues: Issue[], query: Query): Issue[] {
       (query.priority === 'All' || issue.priority === query.priority) &&
       [issue.title, issue.notes, ...(issue.tags ?? [])].join(' ').toLowerCase().includes(text),
   );
-  if (query.order === 'Priority') {
+  if (query.order === 'Newest' || query.order === 'Oldest') {
+    result.sort((a, b) => {
+      if (!a.updatedAt) return b.updatedAt ? 1 : 0;
+      if (!b.updatedAt) return -1;
+      const delta = Date.parse(a.updatedAt) - Date.parse(b.updatedAt);
+      return query.order === 'Newest' ? -delta : delta;
+    });
+  } else if (query.order === 'Priority') {
     const rank = { High: 0, Normal: 1, Low: 2 };
     result.sort((a, b) => rank[a.priority] - rank[b.priority]);
   } else if (query.order === 'Title')

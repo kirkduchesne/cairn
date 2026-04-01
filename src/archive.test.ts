@@ -16,3 +16,8 @@ test('roundtrips archive tags and scopes old issues as active', () => {
   expect(queryIssues(issues, { ...defaultQuery, scope: 'Archived' }).map((item) => item.id)).toEqual(['2']);
   expect(queryIssues(issues, { ...defaultQuery, scope: 'All' })).toHaveLength(2);
 });
+test('sorts updates with unknown legacy dates last in either direction', () => {
+  const issues = parseIssues(JSON.stringify([record, { ...record, id: '2', updatedAt: '2026-01-01' }, { ...record, id: '3', updatedAt: '2026-03-01' }]));
+  expect(queryIssues(issues, { ...defaultQuery, order: 'Newest' }).map((issue) => issue.id)).toEqual(['3','2','1']);
+  expect(queryIssues(issues, { ...defaultQuery, order: 'Oldest' }).map((issue) => issue.id)).toEqual(['2','3','1']);
+});

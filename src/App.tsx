@@ -513,7 +513,7 @@ export function App() {
                 value={order}
                 onChange={(event) => setOrder(event.target.value)}
               >
-                <option>Added</option>
+                <option>Added</option><option>Newest</option><option>Oldest</option>
                 <option>Priority</option>
                 <option>Title</option>
               </select>
