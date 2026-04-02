@@ -1,12 +1,12 @@
 import { normalizeTags, tagSelected } from './tags';
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { Fragment, FormEvent, useEffect, useRef, useState } from 'react';
 
 import { downloadBackup, parseBackup, mergeBackup } from './backup';
 import { shortcutTarget } from './shortcuts';
 import { summarize } from './summary';
 import { changeSelected } from './batch';
 import { SavedViews } from './SavedViews';
-import { queryIssues } from './query';
+import { queryIssues, groupIssues } from './query';
 import { Issue, loadIssues, storageKey } from './storage';
 
 export function App() {
@@ -81,6 +81,7 @@ export function App() {
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<Issue['priority']>('Normal');
+  const [group, setGroup] = useState<'None' | 'Status'>('None');
   const [scope, setScope] = useState<'Active' | 'Archived' | 'All'>('Active');
   const [tagFilter, setTagFilter] = useState('');
   const [filter, setFilter] = useState('All');
@@ -88,6 +89,7 @@ export function App() {
   const [query, setQuery] = useState('');
   const [order, setOrder] = useState('Added');
   const visible = queryIssues(issues, {
+    group,
     scope,
     tag: tagFilter,
     text: query,
@@ -248,7 +250,8 @@ export function App() {
           <summary className="font-semibold">Reusable views</summary>
           <SavedViews
             query={{
-              scope,
+              group,
+    scope,
     tag: tagFilter,
     text: query,
               status: filter,
@@ -256,6 +259,7 @@ export function App() {
               order,
             }}
             onApply={(view) => {
+              setGroup(view.group ?? 'None');
               setScope(view.scope ?? 'Active');
               setTagFilter(view.tag ?? '');
               setQuery(view.text);
@@ -483,6 +487,10 @@ export function App() {
               />
             </label>
             <label>
+              Group issues
+              <select value={group} onChange={(event) => setGroup(event.target.value as typeof group)}><option>None</option><option>Status</option></select>
+            </label>
+            <label>
               Issue scope
               <select value={scope} onChange={(event) => setScope(event.target.value as typeof scope)}>
                 <option>Active</option><option>Archived</option><option>All</option>
@@ -538,6 +546,7 @@ export function App() {
               setFilter('All');
               setPriorityFilter('All');
               setOrder('Added');
+              setGroup('None');
               setScope('Active');
               setTagFilter('');
             }}
@@ -642,7 +651,10 @@ export function App() {
               No issues yet. Add your first task to get started.
             </p>
           )}
-          {visible.map((issue) => (
+          {groupIssues(visible, group).map((section) => (
+            <Fragment key={section.name}>
+              {section.name && <h2 className="border-b py-2 text-lg font-semibold">{section.name} ({section.issues.length})</h2>}
+          {section.issues.map((issue) => (
             <article
               key={issue.id}
               className="min-w-0 space-y-3 rounded-xl bg-white p-6 shadow-sm"
@@ -755,6 +767,8 @@ export function App() {
                 Delete
               </button>
             </article>
+          ))}
+            </Fragment>
           ))}
         </section>
       </fieldset>

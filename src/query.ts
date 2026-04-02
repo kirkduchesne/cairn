@@ -1,6 +1,7 @@
 import { Issue } from './storage';
 
 export type Query = {
+  group?: 'None' | 'Status';
   tag?: string;
   scope?: 'Active' | 'Archived' | 'All';
   text: string;
@@ -38,4 +39,9 @@ export function queryIssues(issues: Issue[], query: Query): Issue[] {
   } else if (query.order === 'Title')
     result.sort((a, b) => a.title.localeCompare(b.title));
   return result;
+}
+
+export function groupIssues(issues: Issue[], group: Query['group']): { name: string; issues: Issue[] }[] {
+  if (!group || group === 'None') return [{ name: '', issues }];
+  return ['Open', 'In progress', 'Done'].map((name) => ({ name, issues: issues.filter((issue) => issue.status === name) })).filter((section) => section.issues.length > 0);
 }
