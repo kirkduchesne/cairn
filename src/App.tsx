@@ -81,7 +81,7 @@ export function App() {
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<Issue['priority']>('Normal');
-  const [group, setGroup] = useState<'None' | 'Status'>('None');
+  const [group, setGroup] = useState<'None' | 'Status' | 'Priority'>('None');
   const [scope, setScope] = useState<'Active' | 'Archived' | 'All'>('Active');
   const [tagFilter, setTagFilter] = useState('');
   const [filter, setFilter] = useState('All');
@@ -488,7 +488,7 @@ export function App() {
             </label>
             <label>
               Group issues
-              <select value={group} onChange={(event) => setGroup(event.target.value as typeof group)}><option>None</option><option>Status</option></select>
+              <select value={group} onChange={(event) => setGroup(event.target.value as typeof group)}><option>None</option><option>Status</option><option>Priority</option></select>
             </label>
             <label>
               Issue scope

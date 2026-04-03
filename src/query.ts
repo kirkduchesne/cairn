@@ -1,7 +1,7 @@
 import { Issue } from './storage';
 
 export type Query = {
-  group?: 'None' | 'Status';
+  group?: 'None' | 'Status' | 'Priority';
   tag?: string;
   scope?: 'Active' | 'Archived' | 'All';
   text: string;
@@ -43,5 +43,6 @@ export function queryIssues(issues: Issue[], query: Query): Issue[] {
 
 export function groupIssues(issues: Issue[], group: Query['group']): { name: string; issues: Issue[] }[] {
   if (!group || group === 'None') return [{ name: '', issues }];
-  return ['Open', 'In progress', 'Done'].map((name) => ({ name, issues: issues.filter((issue) => issue.status === name) })).filter((section) => section.issues.length > 0);
+  const names = group === 'Priority' ? ['High', 'Normal', 'Low'] : ['Open', 'In progress', 'Done'];
+  return names.map((name) => ({ name, issues: issues.filter((issue) => (group === 'Priority' ? issue.priority : issue.status) === name) })).filter((section) => section.issues.length > 0);
 }
