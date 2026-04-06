@@ -272,3 +272,17 @@ test('persists tags through editing and reload', () => {
   fireEvent.change(screen.getByLabelText('Filter tag'), { target: { value: 'web' } });
   expect(screen.getByText('Tagged issue')).toBeTruthy();
 });
+
+test('groups filtered results without selecting hidden issues', () => {
+  render(<App />);
+  add('First');
+  add('Second');
+  fireEvent.change(screen.getByLabelText('Search issues'), { target: { value: 'First' } });
+  fireEvent.change(screen.getByLabelText('Group issues'), { target: { value: 'Status' } });
+  expect(screen.getByRole('heading', { name: 'Open (1)' })).toBeTruthy();
+  fireEvent.click(screen.getByText('Select visible issues'));
+  fireEvent.click(screen.getByText('Apply status'));
+  const saved = JSON.parse(localStorage.getItem(storageKey)!);
+  expect(saved.map((issue: { status: string }) => issue.status)).toEqual(['Done', 'Open']);
+  expect(screen.getByRole('heading', { name: 'Done (1)' })).toBeTruthy();
+});
