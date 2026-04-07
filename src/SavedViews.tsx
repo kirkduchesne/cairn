@@ -88,6 +88,14 @@ export function SavedViews({
         >
           Save new view
         </button>
+        {([-1, 1] as const).map((direction) => {
+          const index = views.findIndex((view) => view.id === selected);
+          return <button type="button" key={direction} disabled={index < 0 || index + direction < 0 || index + direction >= views.length} onClick={() => {
+            const next = [...views];
+            [next[index], next[index + direction]] = [next[index + direction], next[index]];
+            save(next);
+          }}>Move view {direction === -1 ? 'up' : 'down'}</button>;
+        })}
         <button
           type="button"
           disabled={!selected}
