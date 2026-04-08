@@ -65,3 +65,14 @@ export function persistViews(
   localStorage.setItem(viewsKey, raw);
   return raw;
 }
+
+export function copyView(view: SavedView, current: SavedView[]): SavedView {
+  let number = 1;
+  const names = new Set(current.map((item) => item.name.toLowerCase()));
+  let name = '';
+  do { name = `${view.name.slice(0, 30)} copy ${number++}`; } while (names.has(name.toLowerCase()));
+  const ids = new Set(current.map((item) => item.id));
+  let id = `copy-${number}`;
+  while (ids.has(id)) id = `copy-${++number}`;
+  return { ...view, id, name };
+}

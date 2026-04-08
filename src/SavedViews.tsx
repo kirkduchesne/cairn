@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Query } from './query';
-import { loadViews, persistViews, SavedView } from './views';
+import { copyView, loadViews, persistViews, SavedView } from './views';
 
 export function SavedViews({
   query,
@@ -88,6 +88,9 @@ export function SavedViews({
         >
           Save new view
         </button>
+        <button type="button" disabled={!active || views.length >= 12} onClick={() => {
+          if (active) save([...views, copyView(active, views)]);
+        }}>Duplicate selected view</button>
         {([-1, 1] as const).map((direction) => {
           const index = views.findIndex((view) => view.id === selected);
           return <button type="button" key={direction} disabled={index < 0 || index + direction < 0 || index + direction >= views.length} onClick={() => {
