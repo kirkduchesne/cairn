@@ -1,3 +1,4 @@
+import { downloadViews } from './view-backup';
 import { useRef, useState } from 'react';
 import { Query } from './query';
 import { copyView, loadViews, persistViews, SavedView } from './views';
@@ -41,6 +42,10 @@ export function SavedViews({
     >
       <h2 className="font-semibold">Saved views</h2>
       <fieldset disabled={Boolean(initial.error)} className="space-y-3">
+        <button type="button" onClick={() => {
+          try { downloadViews(views); setMessage(`Views download requested. Action ${++saveNumber.current}.`); }
+          catch { setMessage(`Views download failed. Action ${++saveNumber.current}.`); }
+        }}>Export views</button>
         <label>
           Choose saved view
           <select
