@@ -20,3 +20,20 @@ export function downloadViews(views: SavedView[]) {
     link.click();
   } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
 }
+
+export function mergeViews(current: SavedView[], incoming: SavedView[]): SavedView[] {
+  if (current.length + incoming.length > 12) throw new Error('Combined views exceed the limit of 12.');
+  const result = [...current];
+  for (const view of incoming) {
+    let name = view.name;
+    let id = view.id;
+    let suffix = 1;
+    while (result.some((item) => item.name.toLowerCase() === name.toLowerCase())) {
+      name = `${view.name.slice(0, 28)} imported ${suffix++}`;
+    }
+    suffix = 1;
+    while (result.some((item) => item.id === id)) id = `imported-${suffix++}`;
+    result.push({ ...view, name, id });
+  }
+  return parseViews(JSON.stringify(result));
+}

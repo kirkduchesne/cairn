@@ -1,4 +1,4 @@
-import { downloadViews } from './view-backup';
+import { downloadViews, parseViewBackup, mergeViews } from './view-backup';
 import { useRef, useState } from 'react';
 import { Query } from './query';
 import { copyView, loadViews, persistViews, SavedView } from './views';
@@ -14,6 +14,8 @@ export function SavedViews({
   const snapshot = useRef(initial.raw);
   const saveNumber = useRef(0);
   const [views, setViews] = useState(initial.views);
+  const [backupText, setBackupText] = useState('');
+  const [incoming, setIncoming] = useState<SavedView[] | null>(null);
   const [name, setName] = useState('');
   const [selected, setSelected] = useState('');
   const [message, setMessage] = useState(initial.error);
@@ -46,6 +48,19 @@ export function SavedViews({
           try { downloadViews(views); setMessage(`Views download requested. Action ${++saveNumber.current}.`); }
           catch { setMessage(`Views download failed. Action ${++saveNumber.current}.`); }
         }}>Export views</button>
+        <details>
+          <summary>Import saved views</summary>
+          <label>Views backup JSON<textarea value={backupText} maxLength={100000} onChange={(event) => { setBackupText(event.target.value); setIncoming(null); }} /></label>
+          <button type="button" onClick={() => {
+            try {
+              const parsed = parseViewBackup(backupText);
+              mergeViews(views, parsed);
+              setIncoming(parsed);
+              setMessage(`Preview: add ${parsed.length} views. Conflicting names and IDs receive new names. Existing views stay unchanged.`);
+            } catch (error) { setIncoming(null); setMessage(error instanceof Error ? error.message : 'Invalid views backup.'); }
+          }}>Preview views backup</button>
+          {incoming && <p>{incoming.length} views ready to add.</p>}
+        </details>
         <label>
           Choose saved view
           <select
