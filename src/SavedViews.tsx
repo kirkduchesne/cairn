@@ -59,7 +59,15 @@ export function SavedViews({
               setMessage(`Preview: add ${parsed.length} views. Conflicting names and IDs receive new names. Existing views stay unchanged.`);
             } catch (error) { setIncoming(null); setMessage(error instanceof Error ? error.message : 'Invalid views backup.'); }
           }}>Preview views backup</button>
-          {incoming && <p>{incoming.length} views ready to add.</p>}
+          {incoming && <div>
+            <p>{incoming.length} views ready to add.</p>
+            <button type="button" onClick={() => {
+              try {
+                if (save(mergeViews(views, incoming))) { setIncoming(null); setBackupText(''); }
+              } catch (error) { setMessage(error instanceof Error ? error.message : 'Views could not be imported.'); }
+            }}>Import new views</button>
+            <button type="button" onClick={() => { setIncoming(null); setMessage('View import cancelled.'); }}>Cancel view import</button>
+          </div>}
         </details>
         <label>
           Choose saved view
