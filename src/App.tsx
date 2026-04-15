@@ -644,7 +644,7 @@ export function App() {
             Clear selection
           </button>
           {issues.length > 0 && visible.length === 0 && (
-            <p>No issues match your filters.</p>
+            <div><p>No issues match your filters.</p><p className="text-sm text-slate-600">{scope === 'Archived' ? 'Archived work appears here after completed issues are archived.' : 'Clear your filters or check archived work to find another issue.'}</p></div>
           )}
           {issues.length === 0 && (
             <p className="rounded-xl bg-white p-6">
