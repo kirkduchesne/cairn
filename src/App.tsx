@@ -553,6 +553,9 @@ export function App() {
           >
             Reset filters
           </button>
+          <p className="break-words text-sm text-slate-600" aria-label="Current filters">
+            {scope} issues · Status: {filter} · Priority: {priorityFilter} · Tag: {tagFilter || 'All'} · Search: {query || 'None'}
+          </p>
           <p className="text-sm text-slate-600" aria-live="polite">
             {visible.length} of {issues.length} issues
           </p>
