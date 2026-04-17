@@ -458,10 +458,12 @@ export function App() {
           <button type="submit">
             {editing ? 'Save changes' : 'Add issue'}
           </button>
-          {editing && (
+          {(editing || title || notes || tags || priority !== 'Normal') && (
             <button
               type="button"
               onClick={() => {
+                titleInput.current?.focus();
+                announce('Issue editor cleared.');
                 setEditing(null);
                 setTitle('');
     setTags('');
@@ -470,7 +472,7 @@ export function App() {
                 setError('');
               }}
             >
-              Cancel editing
+              {editing ? 'Cancel editing' : 'Clear new issue'}
             </button>
           )}
         </form>
