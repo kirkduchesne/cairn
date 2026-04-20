@@ -138,6 +138,16 @@ export function App() {
     selected.includes(issue.id),
   );
   const [editing, setEditing] = useState<string | null>(null);
+  const original = issues.find((issue) => issue.id === editing);
+  const editorDirty = original
+    ? title !== original.title || notes !== original.notes || priority !== original.priority || tags !== (original.tags ?? []).join(', ')
+    : Boolean(title || notes || tags || priority !== 'Normal');
+  useEffect(() => {
+    if (!editorDirty) return;
+    function warn(event: BeforeUnloadEvent) { event.preventDefault(); event.returnValue = ''; }
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [editorDirty]);
   const [error, setError] = useState('');
   const [backupText, setBackupText] = useState('');
   const [importMessage, setImportMessage] = useState('');
@@ -728,6 +738,8 @@ export function App() {
                 aria-label={'Edit ' + issue.title}
                 className="mr-2"
                 onClick={() => {
+                  if (editing === issue.id) { titleInput.current?.focus(); return; }
+                  if (editorDirty && !window.confirm('Discard unfinished issue edits?')) return;
                   titleInput.current?.focus();
                   setEditing(issue.id);
                   setTitle(issue.title);
