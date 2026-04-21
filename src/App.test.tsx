@@ -286,3 +286,19 @@ test('groups filtered results without selecting hidden issues', () => {
   expect(saved.map((issue: { status: string }) => issue.status)).toEqual(['Done', 'Open']);
   expect(screen.getByRole('heading', { name: 'Done (1)' })).toBeTruthy();
 });
+
+test('protects a dirty editor when switching and clears unload protection after cancel', () => {
+  render(<App />);
+  add('First');
+  add('Second');
+  fireEvent.click(screen.getByRole('button', { name: 'Edit First' }));
+  fireEvent.change(screen.getByLabelText('Notes'), { target: { value: 'Unsaved' } });
+  expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(false);
+  vi.spyOn(window, 'confirm').mockReturnValue(false);
+  fireEvent.click(screen.getByRole('button', { name: 'Edit Second' }));
+  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('First');
+  expect((screen.getByRole('button', { name: 'Archive First' }) as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.click(screen.getByText('Cancel editing'));
+  expect(document.activeElement).toBe(screen.getByLabelText('Title'));
+  expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(true);
+});
