@@ -676,8 +676,8 @@ export function App() {
             >
               <p className="text-xs text-slate-600">
                 {issue.updatedAt
-                  ? `Updated ${new Date(issue.updatedAt).toLocaleString()}`
-                  : 'Imported from an earlier list'}
+                  ? <time dateTime={issue.updatedAt}>Updated {new Date(issue.updatedAt).toLocaleString()}</time>
+                  : <span>Imported from an earlier list<span className="sr-only">; update time unknown</span></span>}
               </p>
               <p className="text-sm text-indigo-700">
                 {issue.priority} priority
