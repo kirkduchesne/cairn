@@ -302,3 +302,14 @@ test('protects a dirty editor when switching and clears unload protection after 
   expect(document.activeElement).toBe(screen.getByLabelText('Title'));
   expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(true);
 });
+
+test('announces repeated editor clearing and retains keyboard focus', () => {
+  render(<App />);
+  for (const text of ['First draft', 'Second draft']) {
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: text } });
+    fireEvent.click(screen.getByText('Clear new issue'));
+    expect(document.activeElement).toBe(screen.getByLabelText('Title'));
+  }
+  expect(screen.getByText('Issue editor cleared. Action 2.')).toBeTruthy();
+  expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(true);
+});
