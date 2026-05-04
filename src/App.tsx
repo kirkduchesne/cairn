@@ -1,3 +1,4 @@
+import { downloadText, resultSummary } from './text-export';
 import { normalizeTags, tagSelected } from './tags';
 import { Fragment, FormEvent, useEffect, useRef, useState } from 'react';
 
@@ -318,6 +319,12 @@ export function App() {
             >
               Export visible issues
             </button>
+            <button type="button" disabled={Boolean(initial.error)} onClick={() => {
+              try {
+                downloadText(resultSummary(visible, { text: query, status: filter, priority: priorityFilter, tag: tagFilter, order, scope }), 'issue-desk-summary.txt');
+                announce('Result summary download requested.');
+              } catch { announce('Summary download could not start. Your issues are unchanged.'); }
+            }}>Export result summary</button>
             <p role="status" className="mt-2 text-sm">
               {exportMessage}
             </p>
