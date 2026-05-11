@@ -419,6 +419,14 @@ export function App() {
           {storageError}
         </p>
       )}
+      {initial.error && <button type="button" onClick={() => {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          if (raw === null) { announce('No stored issue text is available to recover.'); return; }
+          downloadText(raw, 'issue-desk-storage-recovery.txt');
+          announce('Raw storage download requested. Keep it for manual recovery; it may not be a valid backup.');
+        } catch { announce('Storage recovery could not be downloaded. Existing storage is unchanged.'); }
+      }}>Download unreadable storage</button>}
       <fieldset
         disabled={Boolean(initial.error)}
         className="grid items-start gap-6 md:grid-cols-[280px_1fr]"
