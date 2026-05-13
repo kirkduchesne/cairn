@@ -313,3 +313,16 @@ test('announces repeated editor clearing and retains keyboard focus', () => {
   expect(screen.getByText('Issue editor cleared. Action 2.')).toBeTruthy();
   expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(true);
 });
+
+test('offers raw recovery without enabling changes or altering corrupt storage', () => {
+  localStorage.setItem(storageKey, '{broken');
+  render(<App />);
+  const original = URL.createObjectURL;
+  URL.createObjectURL = () => { throw new Error('downloads blocked'); };
+  try {
+    fireEvent.click(screen.getByText('Download unreadable storage'));
+    expect(screen.getByText(/Storage recovery could not be downloaded/)).toBeTruthy();
+    expect(localStorage.getItem(storageKey)).toBe('{broken');
+    expect((screen.getByLabelText('Title').closest('fieldset') as HTMLFieldSetElement).disabled).toBe(true);
+  } finally { URL.createObjectURL = original; }
+});
