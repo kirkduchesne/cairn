@@ -326,3 +326,29 @@ test('offers raw recovery without enabling changes or altering corrupt storage',
     expect((screen.getByLabelText('Title').closest('fieldset') as HTMLFieldSetElement).disabled).toBe(true);
   } finally { URL.createObjectURL = original; }
 });
+
+test('preserves issues and selection when tag and archive writes fail', () => {
+  render(<App />);
+  add('Keep');
+  fireEvent.change(screen.getByLabelText('Status for Keep'), { target: { value: 'Done' } });
+  fireEvent.click(screen.getByText('Select visible issues'));
+  const before = localStorage.getItem(storageKey);
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota'); });
+  fireEvent.change(screen.getByLabelText('Batch tag'), { target: { value: 'web' } });
+  fireEvent.click(screen.getByText('Add tag to selected'));
+  fireEvent.click(screen.getByText('Archive selected'));
+  expect(localStorage.getItem(storageKey)).toBe(before);
+  expect(screen.getByText('1 selected')).toBeTruthy();
+  expect((screen.getByText('Undo last batch') as HTMLButtonElement).disabled).toBe(true);
+});
+
+test('protects unseen storage while restoring archived work', () => {
+  localStorage.setItem(storageKey, JSON.stringify([{ id: '1', title: 'Archived', notes: '', status: 'Done', archived: true }]));
+  render(<App />);
+  fireEvent.change(screen.getByLabelText('Issue scope'), { target: { value: 'Archived' } });
+  localStorage.setItem(storageKey, '[]');
+  fireEvent.click(screen.getByRole('button', { name: 'Restore Archived' }));
+  expect(localStorage.getItem(storageKey)).toBe('[]');
+  expect(screen.getByRole('alert').textContent).toContain('another tab');
+  expect(screen.getByRole('button', { name: 'Restore Archived' })).toBeTruthy();
+});
