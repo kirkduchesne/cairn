@@ -67,7 +67,12 @@ export function App() {
   function applyTag(remove = false) {
     if (selectedVisible.some((issue) => issue.archived)) return;
     try {
-      const next = tagSelected(issues, selectedVisible.map((issue) => issue.id), batchTag, remove);
+      const next = tagSelected(
+        issues,
+        selectedVisible.map((issue) => issue.id),
+        batchTag,
+        remove,
+      );
       if (next.every((issue, index) => issue === issues[index])) {
         announce('Selected tags already match.');
       } else if (setIssues(next)) {
@@ -75,7 +80,9 @@ export function App() {
         announce('Selected issue tags updated.');
       }
     } catch (error) {
-      announce(error instanceof Error ? error.message : 'Tags could not be changed.');
+      announce(
+        error instanceof Error ? error.message : 'Tags could not be changed.',
+      );
     }
   }
   const [tags, setTags] = useState('');
@@ -125,14 +132,26 @@ export function App() {
     }
   }
   function archiveSelected(archived: boolean) {
-    if (editing || selectedVisible.length === 0 || (archived && selectedVisible.some((issue) => issue.status !== 'Done'))) return;
-    const next = issues.map((issue) => selected.includes(issue.id) && visible.includes(issue) && Boolean(issue.archived) !== archived
-      ? { ...issue, archived, updatedAt: new Date().toISOString() } : issue);
+    if (
+      editing ||
+      selectedVisible.length === 0 ||
+      (archived && selectedVisible.some((issue) => issue.status !== 'Done'))
+    )
+      return;
+    const next = issues.map((issue) =>
+      selected.includes(issue.id) &&
+      visible.includes(issue) &&
+      Boolean(issue.archived) !== archived
+        ? { ...issue, archived, updatedAt: new Date().toISOString() }
+        : issue,
+    );
     if (next.every((issue, index) => issue === issues[index])) {
       announce('Selected archive state already matches.');
     } else if (setIssues(next)) {
       setUndo(issues);
-      announce(archived ? 'Selected issues archived.' : 'Selected issues restored.');
+      announce(
+        archived ? 'Selected issues archived.' : 'Selected issues restored.',
+      );
     }
   }
   const selectedVisible = visible.filter((issue) =>
@@ -141,11 +160,17 @@ export function App() {
   const [editing, setEditing] = useState<string | null>(null);
   const original = issues.find((issue) => issue.id === editing);
   const editorDirty = original
-    ? title !== original.title || notes !== original.notes || priority !== original.priority || tags !== (original.tags ?? []).join(', ')
+    ? title !== original.title ||
+      notes !== original.notes ||
+      priority !== original.priority ||
+      tags !== (original.tags ?? []).join(', ')
     : Boolean(title || notes || tags || priority !== 'Normal');
   useEffect(() => {
     if (!editorDirty) return;
-    function warn(event: BeforeUnloadEvent) { event.preventDefault(); event.returnValue = ''; }
+    function warn(event: BeforeUnloadEvent) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [editorDirty]);
@@ -235,11 +260,22 @@ export function App() {
       </header>
       <section
         aria-label="Issue summary"
-        className="mb-5 grid grid-cols-2 gap-3 rounded bg-white p-4 sm:grid-cols-5"
+        className="mb-5 grid grid-cols-2 gap-3 rounded bg-white p-4 sm:grid-cols-3 lg:grid-cols-6"
       >
         <p>Unfinished high priority: {counts.attention}</p>
         <p>Active total: {counts.total}</p>
-        <button type="button" onClick={() => { setScope('Archived'); setFilter('All'); setPriorityFilter('All'); setTagFilter(''); setQuery(''); }}>Archived: {issues.filter((issue) => issue.archived).length}</button>
+        <button
+          type="button"
+          onClick={() => {
+            setScope('Archived');
+            setFilter('All');
+            setPriorityFilter('All');
+            setTagFilter('');
+            setQuery('');
+          }}
+        >
+          Archived: {issues.filter((issue) => issue.archived).length}
+        </button>
         {(['Open', 'In progress', 'Done'] as const).map((status) => (
           <button
             type="button"
@@ -262,9 +298,9 @@ export function App() {
           <SavedViews
             query={{
               group,
-    scope,
-    tag: tagFilter,
-    text: query,
+              scope,
+              tag: tagFilter,
+              text: query,
               status: filter,
               priority: priorityFilter,
               order,
@@ -319,12 +355,32 @@ export function App() {
             >
               Export visible issues
             </button>
-            <button type="button" disabled={Boolean(initial.error)} onClick={() => {
-              try {
-                downloadText(resultSummary(visible, { text: query, status: filter, priority: priorityFilter, tag: tagFilter, order, scope }), 'issue-desk-summary.txt');
-                announce('Result summary download requested.');
-              } catch { announce('Summary download could not start. Your issues are unchanged.'); }
-            }}>Export result summary</button>
+            <button
+              type="button"
+              disabled={Boolean(initial.error)}
+              onClick={() => {
+                try {
+                  downloadText(
+                    resultSummary(visible, {
+                      text: query,
+                      status: filter,
+                      priority: priorityFilter,
+                      tag: tagFilter,
+                      order,
+                      scope,
+                    }),
+                    'issue-desk-summary.txt',
+                  );
+                  announce('Result summary download requested.');
+                } catch {
+                  announce(
+                    'Summary download could not start. Your issues are unchanged.',
+                  );
+                }
+              }}
+            >
+              Export result summary
+            </button>
             <p role="status" className="mt-2 text-sm">
               {exportMessage}
             </p>
@@ -419,14 +475,30 @@ export function App() {
           {storageError}
         </p>
       )}
-      {initial.error && <button type="button" onClick={() => {
-        try {
-          const raw = localStorage.getItem(storageKey);
-          if (raw === null) { announce('No stored issue text is available to recover.'); return; }
-          downloadText(raw, 'issue-desk-storage-recovery.txt');
-          announce('Raw storage download requested. Keep it for manual recovery; it may not be a valid backup.');
-        } catch { announce('Storage recovery could not be downloaded. Existing storage is unchanged.'); }
-      }}>Download unreadable storage</button>}
+      {initial.error && (
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              const raw = localStorage.getItem(storageKey);
+              if (raw === null) {
+                announce('No stored issue text is available to recover.');
+                return;
+              }
+              downloadText(raw, 'issue-desk-storage-recovery.txt');
+              announce(
+                'Raw storage download requested. Keep it for manual recovery; it may not be a valid backup.',
+              );
+            } catch {
+              announce(
+                'Storage recovery could not be downloaded. Existing storage is unchanged.',
+              );
+            }
+          }}
+        >
+          Download unreadable storage
+        </button>
+      )}
       <fieldset
         disabled={Boolean(initial.error)}
         className="grid items-start gap-6 md:grid-cols-[280px_1fr]"
@@ -460,7 +532,11 @@ export function App() {
           </label>
           <label>
             Tags (comma separated)
-            <input value={tags} maxLength={128} onChange={(event) => setTags(event.target.value)} />
+            <input
+              value={tags}
+              maxLength={128}
+              onChange={(event) => setTags(event.target.value)}
+            />
           </label>
           <label>
             Priority
@@ -491,7 +567,7 @@ export function App() {
                 announce('Issue editor cleared.');
                 setEditing(null);
                 setTitle('');
-    setTags('');
+                setTags('');
                 setNotes('');
                 setPriority('Normal');
                 setError('');
@@ -515,19 +591,55 @@ export function App() {
             </label>
             <label>
               Group issues
-              <select value={group} onChange={(event) => setGroup(event.target.value as typeof group)}><option>None</option><option>Status</option><option>Priority</option></select>
+              <select
+                value={group}
+                onChange={(event) =>
+                  setGroup(event.target.value as typeof group)
+                }
+              >
+                <option>None</option>
+                <option>Status</option>
+                <option>Priority</option>
+              </select>
             </label>
             <label>
               Issue scope
-              <select value={scope} onChange={(event) => setScope(event.target.value as typeof scope)}>
-                <option>Active</option><option>Archived</option><option>All</option>
+              <select
+                value={scope}
+                onChange={(event) =>
+                  setScope(event.target.value as typeof scope)
+                }
+              >
+                <option>Active</option>
+                <option>Archived</option>
+                <option>All</option>
               </select>
             </label>
             <label>
               Filter tag
-              <select value={tagFilter} onChange={(event) => setTagFilter(event.target.value)}>
+              <select
+                value={tagFilter}
+                onChange={(event) => setTagFilter(event.target.value)}
+              >
                 <option value="">All tags</option>
-                {[...new Set([...issues.flatMap((issue) => issue.tags ?? []), ...(tagFilter ? [tagFilter] : [])])].sort().map((tag) => <option key={tag} value={tag}>{tag} ({issues.filter((issue) => (issue.tags ?? []).includes(tag)).length})</option>)}
+                {[
+                  ...new Set([
+                    ...issues.flatMap((issue) => issue.tags ?? []),
+                    ...(tagFilter ? [tagFilter] : []),
+                  ]),
+                ]
+                  .sort()
+                  .map((tag) => (
+                    <option key={tag} value={tag}>
+                      {tag} (
+                      {
+                        issues.filter((issue) =>
+                          (issue.tags ?? []).includes(tag),
+                        ).length
+                      }
+                      )
+                    </option>
+                  ))}
               </select>
             </label>
             <label>
@@ -548,7 +660,9 @@ export function App() {
                 value={order}
                 onChange={(event) => setOrder(event.target.value)}
               >
-                <option>Added</option><option>Newest</option><option>Oldest</option>
+                <option>Added</option>
+                <option>Newest</option>
+                <option>Oldest</option>
                 <option>Priority</option>
                 <option>Title</option>
               </select>
@@ -580,8 +694,12 @@ export function App() {
           >
             Reset filters
           </button>
-          <p className="break-words text-sm text-slate-600" aria-label="Current filters">
-            {scope} issues · Status: {filter} · Priority: {priorityFilter} · Tag: {tagFilter || 'All'} · Search: {query || 'None'}
+          <p
+            className="break-words text-sm text-slate-600"
+            aria-label="Current filters"
+          >
+            {scope} issues · Status: {filter} · Priority: {priorityFilter} ·
+            Tag: {tagFilter || 'All'} · Search: {query || 'None'}
           </p>
           <p className="text-sm text-slate-600" aria-live="polite">
             {visible.length} of {issues.length} issues
@@ -598,20 +716,64 @@ export function App() {
             className="space-y-3 rounded border border-slate-300 p-3"
           >
             <summary className="font-semibold">Batch tools</summary>
-            <p className="text-sm">Only completed issues can be archived. Archived issues keep their notes and tags; restore them before changing status, priority, or tags.</p>
+            <p className="text-sm">
+              Only completed issues can be archived. Archived issues keep their
+              notes and tags; restore them before changing status, priority, or
+              tags.
+            </p>
             <p className="text-sm text-slate-600">
               Batch changes affect {selectedVisible.length} visible selected
               issues. Status target: {batchStatus}; priority target:{' '}
               {batchPriority}.
             </p>
-            <button type="button" disabled={!selectedVisible.length || Boolean(editing) || selectedVisible.some((issue) => issue.status !== 'Done')} onClick={() => archiveSelected(true)}>Archive selected</button>
-            <button type="button" disabled={!selectedVisible.length || Boolean(editing)} onClick={() => archiveSelected(false)}>Restore selected</button>
+            <button
+              type="button"
+              disabled={
+                !selectedVisible.length ||
+                Boolean(editing) ||
+                selectedVisible.some((issue) => issue.status !== 'Done')
+              }
+              onClick={() => archiveSelected(true)}
+            >
+              Archive selected
+            </button>
+            <button
+              type="button"
+              disabled={!selectedVisible.length || Boolean(editing)}
+              onClick={() => archiveSelected(false)}
+            >
+              Restore selected
+            </button>
             <label>
               Batch tag
-              <input value={batchTag} maxLength={24} onChange={(event) => setBatchTag(event.target.value)} />
+              <input
+                value={batchTag}
+                maxLength={24}
+                onChange={(event) => setBatchTag(event.target.value)}
+              />
             </label>
-            <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing) || selectedVisible.some((issue) => issue.archived)} onClick={() => applyTag()}>Add tag to selected</button>
-            <button type="button" disabled={selectedVisible.length === 0 || Boolean(editing) || selectedVisible.some((issue) => issue.archived)} onClick={() => applyTag(true)}>Remove tag from selected</button>
+            <button
+              type="button"
+              disabled={
+                selectedVisible.length === 0 ||
+                Boolean(editing) ||
+                selectedVisible.some((issue) => issue.archived)
+              }
+              onClick={() => applyTag()}
+            >
+              Add tag to selected
+            </button>
+            <button
+              type="button"
+              disabled={
+                selectedVisible.length === 0 ||
+                Boolean(editing) ||
+                selectedVisible.some((issue) => issue.archived)
+              }
+              onClick={() => applyTag(true)}
+            >
+              Remove tag from selected
+            </button>
             <label>
               Batch status
               <select
@@ -627,7 +789,11 @@ export function App() {
             </label>
             <button
               type="button"
-              disabled={selectedVisible.length === 0 || Boolean(editing) || selectedVisible.some((issue) => issue.archived)}
+              disabled={
+                selectedVisible.length === 0 ||
+                Boolean(editing) ||
+                selectedVisible.some((issue) => issue.archived)
+              }
               onClick={() => applyBatch({ status: batchStatus })}
             >
               Apply status
@@ -647,7 +813,11 @@ export function App() {
             </label>
             <button
               type="button"
-              disabled={selectedVisible.length === 0 || Boolean(editing) || selectedVisible.some((issue) => issue.archived)}
+              disabled={
+                selectedVisible.length === 0 ||
+                Boolean(editing) ||
+                selectedVisible.some((issue) => issue.archived)
+              }
               onClick={() => applyBatch({ priority: batchPriority })}
             >
               Apply priority
@@ -674,7 +844,14 @@ export function App() {
             Clear selection
           </button>
           {issues.length > 0 && visible.length === 0 && (
-            <div><p>No issues match your filters.</p><p className="text-sm text-slate-600">{scope === 'Archived' ? 'Archived work appears here after completed issues are archived.' : 'Clear your filters or check archived work to find another issue.'}</p></div>
+            <div>
+              <p>No issues match your filters.</p>
+              <p className="text-sm text-slate-600">
+                {scope === 'Archived'
+                  ? 'Archived work appears here after completed issues are archived.'
+                  : 'Clear your filters or check archived work to find another issue.'}
+              </p>
+            </div>
           )}
           {issues.length === 0 && (
             <p className="rounded-xl bg-white p-6">
@@ -683,123 +860,198 @@ export function App() {
           )}
           {groupIssues(visible, group).map((section) => (
             <Fragment key={section.name}>
-              {section.name && <h2 className="border-b py-2 text-lg font-semibold">{section.name} ({section.issues.length})</h2>}
-          {section.issues.map((issue) => (
-            <article
-              key={issue.id}
-              className="min-w-0 space-y-3 rounded-xl bg-white p-6 shadow-sm"
-            >
-              <p className="text-xs text-slate-600">
-                {issue.updatedAt
-                  ? <time dateTime={issue.updatedAt}>Updated {new Date(issue.updatedAt).toLocaleString()}</time>
-                  : <span>Imported from an earlier list<span className="sr-only">; update time unknown</span></span>}
-              </p>
-              <p className="text-sm text-indigo-700">
-                {issue.priority} priority
-              </p>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4"
-                  aria-label={'Select ' + issue.title}
-                  checked={selected.includes(issue.id)}
-                  onChange={(event) =>
-                    setSelected(
-                      event.target.checked
-                        ? [...selected, issue.id]
-                        : selected.filter((id) => id !== issue.id),
-                    )
-                  }
-                />
-                Select issue
-              </label>
-              <ul aria-label={'Tags for ' + issue.title} className="flex flex-wrap gap-1">
-                {(issue.tags ?? []).map((tag) => <li key={tag} className="break-all rounded bg-indigo-50 px-2 py-1 text-xs">{tag}</li>)}
-              </ul>
-              <h2 className="break-words text-xl font-semibold">
-                {issue.title}
-              </h2>
-              <p className="whitespace-pre-wrap break-words text-slate-600">
-                {issue.notes}
-              </p>
-              <label className="break-words">
-                Status
-                <select
-                  aria-label={'Status for ' + issue.title}
-                  disabled={Boolean(issue.archived)}
-                  value={issue.status}
-                  onChange={(event) =>
-                    setIssues(
-                      issues.map((item) =>
-                        item.id === issue.id
-                          ? {
-                              ...item,
-                              status: event.target.value as Issue['status'],
-                              updatedAt: new Date().toISOString(),
-                            }
-                          : item,
-                      ),
-                    )
-                  }
-                >
-                  <option>Open</option>
-                  <option>In progress</option>
-                  <option>Done</option>
-                </select>
-              </label>
-              <button
-                type="button"
-                disabled={Boolean(issue.archived)}
-                aria-label={'Edit ' + issue.title}
-                className="mr-2"
-                onClick={() => {
-                  if (editing === issue.id) { titleInput.current?.focus(); return; }
-                  if (editorDirty && !window.confirm('Discard unfinished issue edits?')) return;
-                  titleInput.current?.focus();
-                  setEditing(issue.id);
-                  setTitle(issue.title);
-                  setTags((issue.tags ?? []).join(', '));
-                  setNotes(issue.notes);
-                  setPriority(issue.priority);
-                  setError('');
-                }}
-              >
-                Edit
-              </button>
-              {issue.archived ? <div>
-                <p>Archived · Restore this issue before editing.</p>
-                <button type="button" disabled={Boolean(editing)} aria-label={'Restore ' + issue.title} onClick={() => {
-                  if (setIssues(issues.map((item) => item.id === issue.id ? { ...item, archived: false, updatedAt: new Date().toISOString() } : item))) announce('Issue restored.');
-                }}>Restore issue</button>
-              </div> : (
-                <button type="button" disabled={issue.status !== 'Done' || Boolean(editing)} onClick={() => {
-                  if (setIssues(issues.map((item) => item.id === issue.id ? { ...item, archived: true, updatedAt: new Date().toISOString() } : item))) announce('Issue archived.');
-                }} aria-label={'Archive ' + issue.title}>Archive issue</button>
+              {section.name && (
+                <h2 className="border-b py-2 text-lg font-semibold">
+                  {section.name} ({section.issues.length})
+                </h2>
               )}
-              <button
-                type="button"
-                aria-label={'Delete ' + issue.title}
-                className="bg-red-700 hover:bg-red-800"
-                onClick={() => {
-                  if (!window.confirm('Delete this issue?')) return;
-                  if (!setIssues(issues.filter((item) => item.id !== issue.id)))
-                    return;
-                  titleInput.current?.focus();
-                  announce('Issue deleted.');
-                  if (editing === issue.id) {
-                    setEditing(null);
-                    setTitle('');
-    setTags('');
-                    setNotes('');
-                    setPriority('Normal');
-                    setError('');
-                  }
-                }}
-              >
-                Delete
-              </button>
-            </article>
-          ))}
+              {section.issues.map((issue) => (
+                <article
+                  key={issue.id}
+                  className="min-w-0 space-y-3 rounded-xl bg-white p-6 shadow-sm"
+                >
+                  <p className="text-xs text-slate-600">
+                    {issue.updatedAt ? (
+                      <time dateTime={issue.updatedAt}>
+                        Updated {new Date(issue.updatedAt).toLocaleString()}
+                      </time>
+                    ) : (
+                      <span>
+                        Imported from an earlier list
+                        <span className="sr-only">; update time unknown</span>
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-sm text-indigo-700">
+                    {issue.priority} priority
+                  </p>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
+                      aria-label={'Select ' + issue.title}
+                      checked={selected.includes(issue.id)}
+                      onChange={(event) =>
+                        setSelected(
+                          event.target.checked
+                            ? [...selected, issue.id]
+                            : selected.filter((id) => id !== issue.id),
+                        )
+                      }
+                    />
+                    Select issue
+                  </label>
+                  <ul
+                    aria-label={'Tags for ' + issue.title}
+                    className="flex flex-wrap gap-1"
+                  >
+                    {(issue.tags ?? []).map((tag) => (
+                      <li
+                        key={tag}
+                        className="break-all rounded bg-indigo-50 px-2 py-1 text-xs"
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                  <h2 className="break-words text-xl font-semibold">
+                    {issue.title}
+                  </h2>
+                  <p className="whitespace-pre-wrap break-words text-slate-600">
+                    {issue.notes}
+                  </p>
+                  <label className="break-words">
+                    Status
+                    <select
+                      aria-label={'Status for ' + issue.title}
+                      disabled={Boolean(issue.archived)}
+                      value={issue.status}
+                      onChange={(event) =>
+                        setIssues(
+                          issues.map((item) =>
+                            item.id === issue.id
+                              ? {
+                                  ...item,
+                                  status: event.target.value as Issue['status'],
+                                  updatedAt: new Date().toISOString(),
+                                }
+                              : item,
+                          ),
+                        )
+                      }
+                    >
+                      <option>Open</option>
+                      <option>In progress</option>
+                      <option>Done</option>
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    disabled={Boolean(issue.archived)}
+                    aria-label={'Edit ' + issue.title}
+                    className="mr-2"
+                    onClick={() => {
+                      if (editing === issue.id) {
+                        titleInput.current?.focus();
+                        return;
+                      }
+                      if (
+                        editorDirty &&
+                        !window.confirm('Discard unfinished issue edits?')
+                      )
+                        return;
+                      titleInput.current?.focus();
+                      setEditing(issue.id);
+                      setTitle(issue.title);
+                      setTags((issue.tags ?? []).join(', '));
+                      setNotes(issue.notes);
+                      setPriority(issue.priority);
+                      setError('');
+                    }}
+                  >
+                    Edit
+                  </button>
+                  {issue.archived ? (
+                    <div>
+                      <p>Archived · Restore this issue before editing.</p>
+                      <button
+                        type="button"
+                        disabled={Boolean(editing)}
+                        aria-label={'Restore ' + issue.title}
+                        onClick={() => {
+                          if (
+                            setIssues(
+                              issues.map((item) =>
+                                item.id === issue.id
+                                  ? {
+                                      ...item,
+                                      archived: false,
+                                      updatedAt: new Date().toISOString(),
+                                    }
+                                  : item,
+                              ),
+                            )
+                          )
+                            announce('Issue restored.');
+                        }}
+                      >
+                        Restore issue
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={issue.status !== 'Done' || Boolean(editing)}
+                      onClick={() => {
+                        if (
+                          setIssues(
+                            issues.map((item) =>
+                              item.id === issue.id
+                                ? {
+                                    ...item,
+                                    archived: true,
+                                    updatedAt: new Date().toISOString(),
+                                  }
+                                : item,
+                            ),
+                          )
+                        )
+                          announce('Issue archived.');
+                      }}
+                      className="mr-2"
+                        aria-label={'Archive ' + issue.title}
+                    >
+                      Archive issue
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    aria-label={'Delete ' + issue.title}
+                    className="bg-red-700 hover:bg-red-800"
+                    onClick={() => {
+                      if (!window.confirm('Delete this issue?')) return;
+                      if (
+                        !setIssues(
+                          issues.filter((item) => item.id !== issue.id),
+                        )
+                      )
+                        return;
+                      titleInput.current?.focus();
+                      announce('Issue deleted.');
+                      if (editing === issue.id) {
+                        setEditing(null);
+                        setTitle('');
+                        setTags('');
+                        setNotes('');
+                        setPriority('Normal');
+                        setError('');
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
+                </article>
+              ))}
             </Fragment>
           ))}
         </section>

@@ -35,8 +35,10 @@ export function SavedViews({
     }
   }
   const active = views.find((view) => view.id === selected);
-  const changed =
-    active && JSON.stringify(active.query) !== JSON.stringify(query);
+  function queryIdentity(value: Query) {
+    return JSON.stringify([value.text, value.status, value.priority, value.order, value.tag ?? '', value.scope ?? 'Active', value.group ?? 'None']);
+  }
+  const changed = active && queryIdentity(active.query) !== queryIdentity(query);
   return (
     <section
       className="mb-5 space-y-3 rounded bg-white p-4"
@@ -44,30 +46,91 @@ export function SavedViews({
     >
       <h2 className="font-semibold">Saved views</h2>
       <fieldset disabled={Boolean(initial.error)} className="space-y-3">
-        <button type="button" onClick={() => {
-          try { downloadViews(views); setMessage(`Views download requested. Action ${++saveNumber.current}.`); }
-          catch { setMessage(`Views download failed. Action ${++saveNumber.current}.`); }
-        }}>Export views</button>
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              downloadViews(views);
+              setMessage(
+                `Views download requested. Action ${++saveNumber.current}.`,
+              );
+            } catch {
+              setMessage(
+                `Views download failed. Action ${++saveNumber.current}.`,
+              );
+            }
+          }}
+        >
+          Export views
+        </button>
         <details>
           <summary>Import saved views</summary>
-          <label>Views backup JSON<textarea value={backupText} maxLength={100000} onChange={(event) => { setBackupText(event.target.value); setIncoming(null); }} /></label>
-          <button type="button" onClick={() => {
-            try {
-              const parsed = parseViewBackup(backupText);
-              mergeViews(views, parsed);
-              setIncoming(parsed);
-              setMessage(`Preview: add ${parsed.length} views. Conflicting names and IDs receive new names. Existing views stay unchanged.`);
-            } catch (error) { setIncoming(null); setMessage(error instanceof Error ? error.message : 'Invalid views backup.'); }
-          }}>Preview views backup</button>
-          {incoming && <div>
-            <p>{incoming.length} views ready to add.</p>
-            <button type="button" onClick={() => {
+          <label>
+            Views backup JSON
+            <textarea
+              value={backupText}
+              maxLength={100000}
+              onChange={(event) => {
+                setBackupText(event.target.value);
+                setIncoming(null);
+              }}
+            />
+          </label>
+          <button
+            type="button"
+            onClick={() => {
               try {
-                if (save(mergeViews(views, incoming))) { setIncoming(null); setBackupText(''); }
-              } catch (error) { setMessage(error instanceof Error ? error.message : 'Views could not be imported.'); }
-            }}>Import new views</button>
-            <button type="button" onClick={() => { setIncoming(null); setMessage('View import cancelled.'); }}>Cancel view import</button>
-          </div>}
+                const parsed = parseViewBackup(backupText);
+                mergeViews(views, parsed);
+                setIncoming(parsed);
+                setMessage(
+                  `Preview: add ${parsed.length} views. Conflicting names and IDs receive new names. Existing views stay unchanged.`,
+                );
+              } catch (error) {
+                setIncoming(null);
+                setMessage(
+                  error instanceof Error
+                    ? error.message
+                    : 'Invalid views backup.',
+                );
+              }
+            }}
+          >
+            Preview views backup
+          </button>
+          {incoming && (
+            <div>
+              <p>{incoming.length} views ready to add.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    if (save(mergeViews(views, incoming))) {
+                      setIncoming(null);
+                      setBackupText('');
+                    }
+                  } catch (error) {
+                    setMessage(
+                      error instanceof Error
+                        ? error.message
+                        : 'Views could not be imported.',
+                    );
+                  }
+                }}
+              >
+                Import new views
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIncoming(null);
+                  setMessage('View import cancelled.');
+                }}
+              >
+                Cancel view import
+              </button>
+            </div>
+          )}
         </details>
         <label>
           Choose saved view
@@ -116,16 +179,38 @@ export function SavedViews({
         >
           Save new view
         </button>
-        <button type="button" disabled={!active || views.length >= 12} onClick={() => {
-          if (active) save([...views, copyView(active, views)]);
-        }}>Duplicate selected view</button>
+        <button
+          type="button"
+          disabled={!active || views.length >= 12}
+          onClick={() => {
+            if (active) save([...views, copyView(active, views)]);
+          }}
+        >
+          Duplicate selected view
+        </button>
         {([-1, 1] as const).map((direction) => {
           const index = views.findIndex((view) => view.id === selected);
-          return <button type="button" key={direction} disabled={index < 0 || index + direction < 0 || index + direction >= views.length} onClick={() => {
-            const next = [...views];
-            [next[index], next[index + direction]] = [next[index + direction], next[index]];
-            save(next);
-          }}>Move view {direction === -1 ? 'up' : 'down'}</button>;
+          return (
+            <button
+              type="button"
+              key={direction}
+              disabled={
+                index < 0 ||
+                index + direction < 0 ||
+                index + direction >= views.length
+              }
+              onClick={() => {
+                const next = [...views];
+                [next[index], next[index + direction]] = [
+                  next[index + direction],
+                  next[index],
+                ];
+                save(next);
+              }}
+            >
+              Move view {direction === -1 ? 'up' : 'down'}
+            </button>
+          );
         })}
         <button
           type="button"

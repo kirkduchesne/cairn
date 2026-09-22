@@ -17,14 +17,19 @@ export function parseViews(raw: string | null): SavedView[] {
         !view.name.trim() ||
         view.name.length > 40 ||
         !view.query ||
-        (view.query.group !== undefined && !['None', 'Status', 'Priority'].includes(view.query.group)) ||
-        (view.query.scope !== undefined && !['Active', 'Archived', 'All'].includes(view.query.scope)) ||
-        (view.query.tag !== undefined && (typeof view.query.tag !== 'string' || view.query.tag.length > 24)) ||
+        (view.query.group !== undefined &&
+          !['None', 'Status', 'Priority'].includes(view.query.group)) ||
+        (view.query.scope !== undefined &&
+          !['Active', 'Archived', 'All'].includes(view.query.scope)) ||
+        (view.query.tag !== undefined &&
+          (typeof view.query.tag !== 'string' || view.query.tag.length > 24)) ||
         typeof view.query.text !== 'string' ||
         view.query.text.length > 200 ||
         !['All', 'Open', 'In progress', 'Done'].includes(view.query.status) ||
         !['All', 'Low', 'Normal', 'High'].includes(view.query.priority) ||
-        !['Added', 'Priority', 'Title', 'Newest', 'Oldest'].includes(view.query.order),
+        !['Added', 'Priority', 'Title', 'Newest', 'Oldest'].includes(
+          view.query.order,
+        ),
     ) ||
     new Set(data.map((view) => view.id)).size !== data.length ||
     new Set(data.map((view) => view.name.trim().toLowerCase())).size !==
@@ -68,9 +73,11 @@ export function persistViews(
 
 export function copyView(view: SavedView, current: SavedView[]): SavedView {
   let number = 1;
-  const names = new Set(current.map((item) => item.name.toLowerCase()));
+  const names = new Set(current.map((item) => item.name.trim().toLowerCase()));
   let name = '';
-  do { name = `${view.name.slice(0, 30)} copy ${number++}`; } while (names.has(name.toLowerCase()));
+  do {
+    name = `${view.name.slice(0, 30)} copy ${number++}`;
+  } while (names.has(name.trim().toLowerCase()));
   const ids = new Set(current.map((item) => item.id));
   let id = `copy-${number}`;
   while (ids.has(id)) id = `copy-${++number}`;

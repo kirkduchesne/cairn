@@ -26,3 +26,11 @@ test('failed saves preserve entered name and never apply filters', () => {
   expect(apply).not.toHaveBeenCalled();
   expect(localStorage.getItem(viewsKey)).toBeNull();
 });
+
+test('treats absent legacy fields as current defaults when comparing a view', () => {
+  localStorage.setItem(viewsKey, JSON.stringify([{ id: 'legacy', name: 'Legacy view', query: defaultQuery }]));
+  render(<SavedViews query={{ ...defaultQuery, tag: '', scope: 'Active', group: 'None' }} onApply={() => {}} />);
+  fireEvent.change(screen.getByLabelText('Choose saved view'), { target: { value: 'legacy' } });
+  expect((screen.getByText('Update selected view') as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.queryByText('Current filters differ from the selected view.')).toBeNull();
+});

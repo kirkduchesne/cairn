@@ -20,11 +20,17 @@ export function queryIssues(issues: Issue[], query: Query): Issue[] {
   const text = query.text.trim().toLowerCase();
   const result = issues.filter(
     (issue) =>
-      (query.scope === 'All' || (query.scope === 'Archived' ? Boolean(issue.archived) : !issue.archived)) &&
+      (query.scope === 'All' ||
+        (query.scope === 'Archived'
+          ? Boolean(issue.archived)
+          : !issue.archived)) &&
       (!query.tag || (issue.tags ?? []).includes(query.tag)) &&
       (query.status === 'All' || issue.status === query.status) &&
       (query.priority === 'All' || issue.priority === query.priority) &&
-      [issue.title, issue.notes, ...(issue.tags ?? [])].join(' ').toLowerCase().includes(text),
+      [issue.title, issue.notes, ...(issue.tags ?? [])]
+        .join(' ')
+        .toLowerCase()
+        .includes(text),
   );
   if (query.order === 'Newest' || query.order === 'Oldest') {
     result.sort((a, b) => {
@@ -41,8 +47,22 @@ export function queryIssues(issues: Issue[], query: Query): Issue[] {
   return result;
 }
 
-export function groupIssues(issues: Issue[], group: Query['group']): { name: string; issues: Issue[] }[] {
+export function groupIssues(
+  issues: Issue[],
+  group: Query['group'],
+): { name: string; issues: Issue[] }[] {
   if (!group || group === 'None') return [{ name: '', issues }];
-  const names = group === 'Priority' ? ['High', 'Normal', 'Low'] : ['Open', 'In progress', 'Done'];
-  return names.map((name) => ({ name, issues: issues.filter((issue) => (group === 'Priority' ? issue.priority : issue.status) === name) })).filter((section) => section.issues.length > 0);
+  const names =
+    group === 'Priority'
+      ? ['High', 'Normal', 'Low']
+      : ['Open', 'In progress', 'Done'];
+  return names
+    .map((name) => ({
+      name,
+      issues: issues.filter(
+        (issue) =>
+          (group === 'Priority' ? issue.priority : issue.status) === name,
+      ),
+    }))
+    .filter((section) => section.issues.length > 0);
 }

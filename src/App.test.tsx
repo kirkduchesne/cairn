@@ -241,35 +241,59 @@ test('keyboard shortcuts move focus without changing entered text', () => {
 });
 
 test('accepts maximum fields and rejects oversized legacy fields', () => {
-  const issue = { id: 'a', title: 'x'.repeat(100), notes: 'n'.repeat(1000), status: 'Open' };
+  const issue = {
+    id: 'a',
+    title: 'x'.repeat(100),
+    notes: 'n'.repeat(1000),
+    status: 'Open',
+  };
   expect(parseIssues(JSON.stringify([issue]))[0].priority).toBe('Normal');
-  expect(() => parseIssues(JSON.stringify([{ ...issue, title: issue.title + 'x' }]))).toThrow();
-  expect(() => parseIssues(JSON.stringify([{ ...issue, notes: issue.notes + 'x' }]))).toThrow();
-  expect(() => parseIssues(JSON.stringify([{ ...issue, updatedAt: 'not a date' }]))).toThrow();
+  expect(() =>
+    parseIssues(JSON.stringify([{ ...issue, title: issue.title + 'x' }])),
+  ).toThrow();
+  expect(() =>
+    parseIssues(JSON.stringify([{ ...issue, notes: issue.notes + 'x' }])),
+  ).toThrow();
+  expect(() =>
+    parseIssues(JSON.stringify([{ ...issue, updatedAt: 'not a date' }])),
+  ).toThrow();
 });
 
 test('retains an edited issue when its write conflicts', () => {
   render(<App />);
   add('Original');
   fireEvent.click(screen.getByRole('button', { name: 'Edit Original' }));
-  fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Uncommitted edit' } });
+  fireEvent.change(screen.getByLabelText('Title'), {
+    target: { value: 'Uncommitted edit' },
+  });
   localStorage.setItem(storageKey, '[]');
   fireEvent.click(screen.getByText('Save changes'));
-  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Uncommitted edit');
+  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe(
+    'Uncommitted edit',
+  );
   expect(screen.getByText('Original')).toBeTruthy();
   expect(localStorage.getItem(storageKey)).toBe('[]');
 });
 
 test('persists tags through editing and reload', () => {
   const view = render(<App />);
-  fireEvent.change(screen.getByLabelText('Tags (comma separated)'), { target: { value: 'Web, BUG, web' } });
+  fireEvent.change(screen.getByLabelText('Tags (comma separated)'), {
+    target: { value: 'Web, BUG, web' },
+  });
   add('Tagged issue');
-  expect(JSON.parse(localStorage.getItem(storageKey)!)[0].tags).toEqual(['web', 'bug']);
+  expect(JSON.parse(localStorage.getItem(storageKey)!)[0].tags).toEqual([
+    'web',
+    'bug',
+  ]);
   fireEvent.click(screen.getByRole('button', { name: 'Edit Tagged issue' }));
-  expect((screen.getByLabelText('Tags (comma separated)') as HTMLInputElement).value).toBe('web, bug');
+  expect(
+    (screen.getByLabelText('Tags (comma separated)') as HTMLInputElement).value,
+  ).toBe('web, bug');
   view.unmount();
   render(<App />);
-  fireEvent.change(screen.getByLabelText('Filter tag'), { target: { value: 'web' } });
+  fireEvent.change(screen.getByLabelText('Filter tag'), {
+    target: { value: 'web' },
+  });
   expect(screen.getByText('Tagged issue')).toBeTruthy();
 });
 
@@ -277,13 +301,20 @@ test('groups filtered results without selecting hidden issues', () => {
   render(<App />);
   add('First');
   add('Second');
-  fireEvent.change(screen.getByLabelText('Search issues'), { target: { value: 'First' } });
-  fireEvent.change(screen.getByLabelText('Group issues'), { target: { value: 'Status' } });
+  fireEvent.change(screen.getByLabelText('Search issues'), {
+    target: { value: 'First' },
+  });
+  fireEvent.change(screen.getByLabelText('Group issues'), {
+    target: { value: 'Status' },
+  });
   expect(screen.getByRole('heading', { name: 'Open (1)' })).toBeTruthy();
   fireEvent.click(screen.getByText('Select visible issues'));
   fireEvent.click(screen.getByText('Apply status'));
   const saved = JSON.parse(localStorage.getItem(storageKey)!);
-  expect(saved.map((issue: { status: string }) => issue.status)).toEqual(['Done', 'Open']);
+  expect(saved.map((issue: { status: string }) => issue.status)).toEqual([
+    'Done',
+    'Open',
+  ]);
   expect(screen.getByRole('heading', { name: 'Done (1)' })).toBeTruthy();
 });
 
@@ -292,60 +323,102 @@ test('protects a dirty editor when switching and clears unload protection after 
   add('First');
   add('Second');
   fireEvent.click(screen.getByRole('button', { name: 'Edit First' }));
-  fireEvent.change(screen.getByLabelText('Notes'), { target: { value: 'Unsaved' } });
-  expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(false);
+  fireEvent.change(screen.getByLabelText('Notes'), {
+    target: { value: 'Unsaved' },
+  });
+  expect(
+    window.dispatchEvent(new Event('beforeunload', { cancelable: true })),
+  ).toBe(false);
   vi.spyOn(window, 'confirm').mockReturnValue(false);
   fireEvent.click(screen.getByRole('button', { name: 'Edit Second' }));
-  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('First');
-  expect((screen.getByRole('button', { name: 'Archive First' }) as HTMLButtonElement).disabled).toBe(true);
+  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe(
+    'First',
+  );
+  expect(
+    (screen.getByRole('button', { name: 'Archive First' }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
   fireEvent.click(screen.getByText('Cancel editing'));
   expect(document.activeElement).toBe(screen.getByLabelText('Title'));
-  expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(true);
+  expect(
+    window.dispatchEvent(new Event('beforeunload', { cancelable: true })),
+  ).toBe(true);
 });
 
 test('announces repeated editor clearing and retains keyboard focus', () => {
   render(<App />);
   for (const text of ['First draft', 'Second draft']) {
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: text } });
+    fireEvent.change(screen.getByLabelText('Title'), {
+      target: { value: text },
+    });
     fireEvent.click(screen.getByText('Clear new issue'));
     expect(document.activeElement).toBe(screen.getByLabelText('Title'));
   }
   expect(screen.getByText('Issue editor cleared. Action 2.')).toBeTruthy();
-  expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(true);
+  expect(
+    window.dispatchEvent(new Event('beforeunload', { cancelable: true })),
+  ).toBe(true);
 });
 
 test('offers raw recovery without enabling changes or altering corrupt storage', () => {
   localStorage.setItem(storageKey, '{broken');
   render(<App />);
   const original = URL.createObjectURL;
-  URL.createObjectURL = () => { throw new Error('downloads blocked'); };
+  URL.createObjectURL = () => {
+    throw new Error('downloads blocked');
+  };
   try {
     fireEvent.click(screen.getByText('Download unreadable storage'));
-    expect(screen.getByText(/Storage recovery could not be downloaded/)).toBeTruthy();
+    expect(
+      screen.getByText(/Storage recovery could not be downloaded/),
+    ).toBeTruthy();
     expect(localStorage.getItem(storageKey)).toBe('{broken');
-    expect((screen.getByLabelText('Title').closest('fieldset') as HTMLFieldSetElement).disabled).toBe(true);
-  } finally { URL.createObjectURL = original; }
+    expect(
+      (
+        screen
+          .getByLabelText('Title')
+          .closest('fieldset') as HTMLFieldSetElement
+      ).disabled,
+    ).toBe(true);
+  } finally {
+    URL.createObjectURL = original;
+  }
 });
 
 test('preserves issues and selection when tag and archive writes fail', () => {
   render(<App />);
   add('Keep');
-  fireEvent.change(screen.getByLabelText('Status for Keep'), { target: { value: 'Done' } });
+  fireEvent.change(screen.getByLabelText('Status for Keep'), {
+    target: { value: 'Done' },
+  });
   fireEvent.click(screen.getByText('Select visible issues'));
   const before = localStorage.getItem(storageKey);
-  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota'); });
-  fireEvent.change(screen.getByLabelText('Batch tag'), { target: { value: 'web' } });
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('quota');
+  });
+  fireEvent.change(screen.getByLabelText('Batch tag'), {
+    target: { value: 'web' },
+  });
   fireEvent.click(screen.getByText('Add tag to selected'));
   fireEvent.click(screen.getByText('Archive selected'));
   expect(localStorage.getItem(storageKey)).toBe(before);
   expect(screen.getByText('1 selected')).toBeTruthy();
-  expect((screen.getByText('Undo last batch') as HTMLButtonElement).disabled).toBe(true);
+  expect(
+    (screen.getByText('Undo last batch') as HTMLButtonElement).disabled,
+  ).toBe(true);
 });
 
 test('protects unseen storage while restoring archived work', () => {
-  localStorage.setItem(storageKey, JSON.stringify([{ id: '1', title: 'Archived', notes: '', status: 'Done', archived: true }]));
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify([
+      { id: '1', title: 'Archived', notes: '', status: 'Done', archived: true },
+    ]),
+  );
   render(<App />);
-  fireEvent.change(screen.getByLabelText('Issue scope'), { target: { value: 'Archived' } });
+  fireEvent.change(screen.getByLabelText('Issue scope'), {
+    target: { value: 'Archived' },
+  });
   localStorage.setItem(storageKey, '[]');
   fireEvent.click(screen.getByRole('button', { name: 'Restore Archived' }));
   expect(localStorage.getItem(storageKey)).toBe('[]');

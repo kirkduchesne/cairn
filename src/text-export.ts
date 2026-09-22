@@ -13,11 +13,15 @@ export function resultSummary(issues: Issue[], query: Query): string {
   ].join('\n');
 }
 export function downloadText(text: string, filename: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  const url = URL.createObjectURL(
+    new Blob([text], { type: 'text/plain;charset=utf-8' }),
+  );
   try {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     link.click();
-  } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 }
