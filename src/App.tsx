@@ -1,35 +1,67 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 
+import { downloadBackup, parseBackup, mergeBackup } from './backup';
 import { Issue, loadIssues, storageKey } from './storage';
 
 export function App() {
   const [initial] = useState(loadIssues);
+  const savedSnapshot = useRef(initial.raw);
+  const titleInput = useRef<HTMLInputElement>(null);
+  const [announcement, setAnnouncement] = useState('');
+  const actionNumber = useRef(0);
+
+  function announce(message: string) {
+    actionNumber.current += 1;
+    setAnnouncement(`${message} Action ${actionNumber.current}.`);
+  }
+  const [exportMessage, setExportMessage] = useState('');
   const [issues, updateIssues] = useState<Issue[]>(initial.issues);
   const [storageError, setStorageError] = useState(initial.error);
 
   function setIssues(next: Issue[]) {
     if (initial.error) return false;
     try {
-      localStorage.setItem(storageKey, JSON.stringify(next));
+      if (localStorage.getItem(storageKey) !== savedSnapshot.current) {
+        setStorageError(
+          'Saved issues changed in another tab. Export your current list, then reload before making changes.',
+        );
+        return false;
+      }
+      const raw = JSON.stringify(next);
+      localStorage.setItem(storageKey, raw);
+      savedSnapshot.current = raw;
       updateIssues(next);
       setStorageError('');
       return true;
     } catch {
-      setStorageError('Could not save changes. Free browser storage and try again.');
+      setStorageError(
+        'Could not save changes. Free browser storage and try again.',
+      );
       return false;
     }
   }
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
+  const [priority, setPriority] = useState<Issue['priority']>('Normal');
   const [filter, setFilter] = useState('All');
   const [query, setQuery] = useState('');
+  const [order, setOrder] = useState('Added');
   const visible = issues.filter(
     (issue) =>
       (filter === 'All' || issue.status === filter) &&
-      (issue.title + ' ' + issue.notes).toLowerCase().includes(query.trim().toLowerCase())
+      (issue.title + ' ' + issue.notes)
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
   );
+  if (order === 'Priority') {
+    const rank = { High: 0, Normal: 1, Low: 2 };
+    visible.sort((a, b) => rank[a.priority] - rank[b.priority]);
+  } else if (order === 'Title')
+    visible.sort((a, b) => a.title.localeCompare(b.title));
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [backupText, setBackupText] = useState('');
+  const [importMessage, setImportMessage] = useState('');
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -37,12 +69,26 @@ export function App() {
       setError('Enter an issue title.');
       return;
     }
+    if (!editing && issues.length >= 500) {
+      setError(
+        'This list is limited to 500 issues. Export a backup and remove finished work.',
+      );
+      return;
+    }
     if (editing) {
       if (
         !setIssues(
           issues.map((issue) =>
-            issue.id === editing ? { ...issue, title: title.trim(), notes: notes.trim() } : issue
-          )
+            issue.id === editing
+              ? {
+                  ...issue,
+                  title: title.trim(),
+                  notes: notes.trim(),
+                  priority,
+                  updatedAt: new Date().toISOString(),
+                }
+              : issue,
+          ),
         )
       )
         return;
@@ -54,18 +100,26 @@ export function App() {
           title: title.trim(),
           notes: notes.trim(),
           status: 'Open',
+          updatedAt: new Date().toISOString(),
+          priority,
         },
       ])
     )
       return;
+    announce(editing ? 'Issue updated.' : 'Issue added.');
+    titleInput.current?.focus();
     setEditing(null);
     setTitle('');
     setNotes('');
+    setPriority('Normal');
     setError('');
   }
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
       <header className="mb-8">
         <p className="text-sm font-semibold uppercase tracking-widest text-indigo-700">
           Personal workspace
@@ -73,6 +127,69 @@ export function App() {
         <h1 className="mt-2 text-4xl font-bold">Issue Desk</h1>
         <p className="mt-3 text-slate-600">Keep the next fix in sight.</p>
       </header>
+      <div className="mb-5">
+        <button
+          type="button"
+          disabled={Boolean(initial.error)}
+          onClick={() => {
+            try {
+              downloadBackup(issues);
+              setExportMessage(
+                'Backup download requested. Check your browser downloads.',
+              );
+            } catch {
+              setExportMessage(
+                'Backup download could not start. Check browser download permissions and try again. Your issues are unchanged.',
+              );
+            }
+          }}
+        >
+          Export backup
+        </button>
+        <p role="status" className="mt-2 text-sm">
+          {exportMessage}
+        </p>
+      </div>
+      <details className="mb-5 rounded bg-white p-4">
+        <summary>Restore a backup</summary>
+        <label>
+          Backup JSON
+          <textarea
+            value={backupText}
+            onChange={(event) => setBackupText(event.target.value)}
+            rows={4}
+            maxLength={1000000}
+          />
+        </label>
+        <p className="my-2 text-sm">
+          Only new issue IDs are added. Existing issues are never replaced.
+          Maximum 500 issues and one million backup characters.
+        </p>
+        <button
+          type="button"
+          disabled={Boolean(initial.error)}
+          onClick={() => {
+            try {
+              const incoming = parseBackup(backupText);
+              const next = mergeBackup(issues, incoming);
+              if (!setIssues(next)) return;
+              setImportMessage(
+                `Added ${next.length - issues.length} issues; skipped ${
+                  incoming.length - (next.length - issues.length)
+                } existing IDs.`,
+              );
+              setBackupText('');
+            } catch {
+              setImportMessage(
+                'Backup is invalid or exceeds the list limit. Nothing was changed.',
+              );
+            }
+          }}
+        >
+          Import new issues
+        </button>
+        <p role="status">{importMessage}</p>
+      </details>
       {storageError && (
         <p role="alert" className="mb-4 rounded bg-red-100 p-4 text-red-900">
           {storageError}
@@ -82,11 +199,17 @@ export function App() {
         disabled={Boolean(initial.error)}
         className="grid items-start gap-6 md:grid-cols-[280px_1fr]"
       >
-        <form onSubmit={submit} className="min-w-0 space-y-4 rounded-xl bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold">{editing ? 'Edit issue' : 'New issue'}</h2>
+        <form
+          onSubmit={submit}
+          className="min-w-0 space-y-4 rounded-xl bg-white p-6 shadow-sm"
+        >
+          <h2 className="text-xl font-semibold">
+            {editing ? 'Edit issue' : 'New issue'}
+          </h2>
           <label>
             Title
             <input
+              ref={titleInput}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               maxLength={100}
@@ -102,12 +225,27 @@ export function App() {
               rows={4}
             />
           </label>
+          <label>
+            Priority
+            <select
+              value={priority}
+              onChange={(event) =>
+                setPriority(event.target.value as Issue['priority'])
+              }
+            >
+              <option>Low</option>
+              <option>Normal</option>
+              <option>High</option>
+            </select>
+          </label>
           {error && (
             <p role="alert" className="text-red-700">
               {error}
             </p>
           )}
-          <button type="submit">{editing ? 'Save changes' : 'Add issue'}</button>
+          <button type="submit">
+            {editing ? 'Save changes' : 'Add issue'}
+          </button>
           {editing && (
             <button
               type="button"
@@ -115,6 +253,7 @@ export function App() {
                 setEditing(null);
                 setTitle('');
                 setNotes('');
+                setPriority('Normal');
                 setError('');
               }}
             >
@@ -126,11 +265,17 @@ export function App() {
           <div className="grid gap-3 sm:grid-cols-2">
             <label>
               Search issues
-              <input value={query} onChange={(event) => setQuery(event.target.value)} />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
             </label>
             <label>
               Filter status
-              <select value={filter} onChange={(event) => setFilter(event.target.value)}>
+              <select
+                value={filter}
+                onChange={(event) => setFilter(event.target.value)}
+              >
                 <option>All</option>
                 <option>Open</option>
                 <option>In progress</option>
@@ -138,19 +283,47 @@ export function App() {
               </select>
             </label>
           </div>
+          <label>
+            Sort issues
+            <select
+              value={order}
+              onChange={(event) => setOrder(event.target.value)}
+            >
+              <option>Added</option>
+              <option>Priority</option>
+              <option>Title</option>
+            </select>
+          </label>
           <p className="text-sm text-slate-600" aria-live="polite">
             {visible.length} of {issues.length} issues
           </p>
-          {issues.length > 0 && visible.length === 0 && <p>No issues match your filters.</p>}
+          {issues.length > 0 && visible.length === 0 && (
+            <p>No issues match your filters.</p>
+          )}
           {issues.length === 0 && (
             <p className="rounded-xl bg-white p-6">
               No issues yet. Add your first task to get started.
             </p>
           )}
           {visible.map((issue) => (
-            <article key={issue.id} className="min-w-0 space-y-3 rounded-xl bg-white p-6 shadow-sm">
-              <h2 className="break-words text-xl font-semibold">{issue.title}</h2>
-              <p className="whitespace-pre-wrap break-words text-slate-600">{issue.notes}</p>
+            <article
+              key={issue.id}
+              className="min-w-0 space-y-3 rounded-xl bg-white p-6 shadow-sm"
+            >
+              <p className="text-xs text-slate-600">
+                {issue.updatedAt
+                  ? `Updated ${new Date(issue.updatedAt).toLocaleString()}`
+                  : 'Imported from an earlier list'}
+              </p>
+              <p className="text-sm text-indigo-700">
+                {issue.priority} priority
+              </p>
+              <h2 className="break-words text-xl font-semibold">
+                {issue.title}
+              </h2>
+              <p className="whitespace-pre-wrap break-words text-slate-600">
+                {issue.notes}
+              </p>
               <label className="break-words">
                 Status
                 <select
@@ -160,9 +333,13 @@ export function App() {
                     setIssues(
                       issues.map((item) =>
                         item.id === issue.id
-                          ? { ...item, status: event.target.value as Issue['status'] }
-                          : item
-                      )
+                          ? {
+                              ...item,
+                              status: event.target.value as Issue['status'],
+                              updatedAt: new Date().toISOString(),
+                            }
+                          : item,
+                      ),
                     )
                   }
                 >
@@ -175,9 +352,11 @@ export function App() {
                 type="button"
                 aria-label={'Edit ' + issue.title}
                 onClick={() => {
+                  titleInput.current?.focus();
                   setEditing(issue.id);
                   setTitle(issue.title);
                   setNotes(issue.notes);
+                  setPriority(issue.priority);
                   setError('');
                 }}
               >
@@ -189,11 +368,15 @@ export function App() {
                 className="bg-red-700 hover:bg-red-800"
                 onClick={() => {
                   if (!window.confirm('Delete this issue?')) return;
-                  if (!setIssues(issues.filter((item) => item.id !== issue.id))) return;
+                  if (!setIssues(issues.filter((item) => item.id !== issue.id)))
+                    return;
+                  titleInput.current?.focus();
+                  announce('Issue deleted.');
                   if (editing === issue.id) {
                     setEditing(null);
                     setTitle('');
                     setNotes('');
+                    setPriority('Normal');
                     setError('');
                   }
                 }}

@@ -2,6 +2,8 @@ export type Issue = {
   id: string;
   title: string;
   notes: string;
+  updatedAt: string | null;
+  priority: 'Low' | 'Normal' | 'High';
   status: 'Open' | 'In progress' | 'Done';
 };
 export const storageKey = 'issue-desk-v1';
@@ -21,21 +23,37 @@ export function parseIssues(raw: string | null): Issue[] {
         item.title.length > 100 ||
         typeof item.notes !== 'string' ||
         item.notes.length > 1000 ||
-        !['Open', 'In progress', 'Done'].includes(item.status)
+        (item.updatedAt !== undefined &&
+          item.updatedAt !== null &&
+          (typeof item.updatedAt !== 'string' ||
+            !Number.isFinite(Date.parse(item.updatedAt)))) ||
+        (item.priority !== undefined &&
+          !['Low', 'Normal', 'High'].includes(item.priority)) ||
+        !['Open', 'In progress', 'Done'].includes(item.status),
     ) ||
     new Set(data.map((item) => item.id)).size !== data.length
   ) {
     throw new Error('Invalid saved issues');
   }
-  return data;
+  return data.map((item) => ({
+    ...item,
+    priority: item.priority ?? 'Normal',
+    updatedAt: item.updatedAt ?? null,
+  }));
 }
 
-export function loadIssues(): { issues: Issue[]; error: string } {
+export function loadIssues(): {
+  issues: Issue[];
+  error: string;
+  raw: string | null;
+} {
   try {
-    return { issues: parseIssues(localStorage.getItem(storageKey)), error: '' };
+    const raw = localStorage.getItem(storageKey);
+    return { issues: parseIssues(raw), error: '', raw };
   } catch {
     return {
       issues: [],
+      raw: null,
       error:
         'Saved issues could not be read. Reload after checking browser storage. Changes are disabled to protect existing data.',
     };

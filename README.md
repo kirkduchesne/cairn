@@ -1,24 +1,14 @@
 # Issue Desk
 
-A small browser issue tracker.
+A small browser-local issue tracker with priorities, sorting, and JSON backups.
 
-Created in September 2026 as a reconstruction using technology available in
-April 2023. Historical commit dates were intentionally assigned and do not
-represent when the project was originally written or published.
+Created in September 2026 as a reconstruction of incremental development using
+technology available in 2023–2024. Historical author and committer dates were
+intentionally assigned; they do not establish original publication in those years.
 
-Use Node 18, then run `npm ci` and `npm run dev`. Run `npm run build` for production.
+## Run
 
-Track one personal list: add a title and optional notes, edit details, change
-status, search, filter, or delete with confirmation. Data stays in this browser's
-localStorage; there is no account, server, synchronization, or backup. Use one tab
-at a time. Clearing browser data removes the list. Avoid sensitive information.
-
-Saved data is validated on startup. Unreadable or invalid storage disables changes
-without replacing it. Failed writes leave the list and entered form unchanged so
-you can retry after freeing storage. Titles allow 100 characters, notes 1,000.
-Search checks both fields and combines with the status filter.
-
-Development commands:
+Use Node 20, then:
 
 ```sh
 npm ci
@@ -27,12 +17,41 @@ npm test
 npm run build
 ```
 
-React 18.2, TypeScript 5.0.3, Vite 4.2.1, and Tailwind 3.3.1 match the April 2023
-scope. The lockfile was resolved with an April 10, 2023 cutoff, including transitive
-packages. Node 18.20.5 was used for verification; it is a later Node 18 maintenance
-release, not a release available at the assigned dates. Browser verification used
-current Chrome. The UI uses standard forms, Flexbox/Grid, and localStorage.
+The development server binds to loopback. No account, API, or server database is
+required. Keep one active tab and avoid storing sensitive information.
 
-This intentionally historical development toolchain has known security advisories.
-Keep the development server on loopback and upgrade dependencies before adapting
-this project for a current production service.
+## Workflow and storage
+
+Add a title (100 characters), notes (1,000 characters), and priority. Edit details,
+change status, search, filter, sort, or delete with confirmation. Up to 500 issues
+can be added. Existing larger legacy lists remain readable and exportable.
+
+The original `issue-desk-v1` storage key is retained. Older records receive Normal
+priority and an unknown update time; no historical timestamp is invented. Reading
+does not rewrite storage. Changes persist only after a successful write. Invalid
+storage disables changes and is never replaced automatically. If saved data has
+changed in another tab, export this tab's list and reload before continuing.
+The check prevents ordinary stale writes, but localStorage is not a transactional
+multi-user database. Clearing browser data removes the list.
+
+Export downloads a version 1 JSON backup. Restore by pasting that JSON into the
+backup field. Imports validate the whole file before writing, accept at most one
+million characters, and add only IDs not already present. Matching IDs are skipped,
+never overwritten. The result reports added and skipped counts. This is an additive
+restore; it does not undo deletions or replace changed existing issues. Export the
+current list before reorganizing it. Import does not merge fields across versions.
+
+## Compatibility and verification
+
+The original 2023 history is preserved. January 11, 2024 introduces Vite 5.0.11,
+TypeScript 5.3.3, Tailwind 3.4.1 and Node 20. November 21 updates React to 18.3.1 and
+Vite to 5.4.11. Lockfile publication dates were audited at each introducing cutoff,
+including transitive dependencies. Runtime tests use Node 20.19.0, a later Node 20
+maintenance release; browser checks use current Chrome.
+
+Tests cover existing records, issue actions, priorities, backup validation and
+merging, corrupt storage, write failures, and changes made by another tab.
+
+This historical toolchain has known advisories. Upgrade dependencies before using
+it for a current public service. The local app is not a shared issue-management
+system and has no automatic backup or synchronization.
