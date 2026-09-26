@@ -40,7 +40,7 @@ const assert = require('node:assert/strict');
     );
     assert.deepEqual(errors, []);
     await page.screenshot({
-      path: '/tmp/issue-desk-2026-mobile.png',
+      path: '/tmp/cairn-2026-mobile.png',
       fullPage: true,
     });
     console.log(

@@ -1,9 +1,31 @@
-# Issue Desk
+# Cairn
 
-A browser-local tracker for a small personal backlog. Tag and group active work,
-archive completed issues, reuse saved views, and keep portable backups.
+*Keep the next fix in sight.*
 
-![Issue Desk with a sample personal backlog](docs/preview.png)
+Cairn is a browser-local tracker for a small personal backlog. Tag and group
+active work, archive completed issues, reuse saved views, and keep portable
+backups. (Formerly **Issue Desk**.)
+
+![Cairn with a sample personal backlog](docs/preview.png)
+
+## Brand and design
+
+A cairn is a stack of stones that marks a trail, so each issue is a marker on
+the way to done. The mark is three stacked stones with a painted trail blaze on
+top.
+
+- **Palette:** warm stone neutrals, plus a *blaze* orange for primary actions and
+  high priority. *Dusk*, *ochre* and *moss* mark Open, In progress and Done.
+  Every color is an HSL token in `src/styles.css`, with light and dark sets.
+- **Type:** Fraunces (display) and Inter (interface), bundled locally through
+  Fontsource. The app makes no network requests.
+- **Components:** [shadcn/ui](https://ui.shadcn.com) conventions (`components.json`,
+  `cn()`, `class-variance-authority`, lucide icons) live in `src/components/ui`.
+  Form controls are native elements styled as shadcn components, such as
+  `NativeSelect` and a native `Checkbox`. They keep platform accessibility,
+  mobile pickers and scriptable tests.
+- **Theme:** Cairn follows the system color scheme. The header toggle overrides
+  it and saves the choice as `cairn-theme`.
 
 ## Run
 
@@ -18,7 +40,8 @@ npm run build
 
 The development server binds to loopback. No account, backend, or external
 service is needed. React 18.3, TypeScript 5.8, Vite 6.2, and Tailwind 3.4 are
-pinned with their transitive dependencies.
+pinned with their transitive dependencies, as are the shadcn/ui support
+packages and fonts.
 
 ## Work with issues
 
@@ -51,7 +74,9 @@ five-million-character issue backups. Tags are normalized to lowercase and allow
 100,000-character backups. Larger legacy issue lists remain readable; export
 filtered subsets of at most 500 records. Export validation matches import.
 
-Issues retain `issue-desk-v1`; views use `issue-desk-views-v1`. Legacy issues are
+Storage keys and backup formats keep their original names so existing data
+still loads after the rename. Issues retain `issue-desk-v1`; views use
+`issue-desk-views-v1`. Legacy issues are
 active with no tags, Normal priority, and an unknown update time. Older views
 use active scope and no grouping or tag filter. Invalid storage is preserved
 and changes are blocked; download unreadable issue storage as text for manual

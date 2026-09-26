@@ -2,25 +2,113 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
+@layer base {
+  :root {
+    --background: 40 23% 97%;
+    --foreground: 24 12% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 24 12% 11%;
+    --primary: 24 14% 13%;
+    --primary-foreground: 40 23% 97%;
+    --secondary: 36 16% 92%;
+    --secondary-foreground: 24 12% 14%;
+    --muted: 36 16% 93%;
+    --muted-foreground: 25 7% 38%;
+    --accent: 36 18% 91%;
+    --accent-foreground: 24 12% 11%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 34 14% 86%;
+    --input: 34 12% 80%;
+    --ring: 16 86% 48%;
+    --radius: 0.75rem;
+
+    /* Cairn trail palette */
+    --blaze: 16 86% 48%;
+    --blaze-foreground: 0 0% 100%;
+    --blaze-soft: 18 90% 94%;
+    --moss: 152 38% 32%;
+    --moss-soft: 145 30% 92%;
+    --dusk: 218 50% 45%;
+    --dusk-soft: 216 60% 94%;
+    --ochre: 34 88% 36%;
+    --ochre-soft: 42 90% 91%;
+  }
+
+  .dark {
+    --background: 24 10% 7%;
+    --foreground: 40 20% 93%;
+    --card: 24 9% 10%;
+    --card-foreground: 40 20% 93%;
+    --primary: 40 22% 92%;
+    --primary-foreground: 24 12% 9%;
+    --secondary: 24 7% 16%;
+    --secondary-foreground: 40 20% 93%;
+    --muted: 24 7% 15%;
+    --muted-foreground: 34 8% 66%;
+    --accent: 24 7% 17%;
+    --accent-foreground: 40 20% 93%;
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 24 7% 19%;
+    --input: 24 7% 25%;
+    --ring: 18 92% 60%;
+
+    --blaze: 18 92% 60%;
+    --blaze-foreground: 24 12% 8%;
+    --blaze-soft: 18 50% 15%;
+    --moss: 148 38% 60%;
+    --moss-soft: 150 25% 14%;
+    --dusk: 214 70% 70%;
+    --dusk-soft: 218 30% 16%;
+    --ochre: 40 85% 62%;
+    --ochre-soft: 38 45% 14%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
-    @apply bg-slate-100 text-slate-900;
-  }
-  input,
-  textarea,
-  select {
-    @apply block w-full rounded border border-slate-400 bg-white px-3 py-2;
-  }
-  button[type] {
-    @apply rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700;
-  }
-  button:disabled {
-    @apply cursor-not-allowed opacity-50;
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
   }
   :focus-visible {
-    @apply outline outline-2 outline-offset-2 outline-indigo-600;
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
-  label {
-    @apply block text-sm font-semibold;
+  summary {
+    @apply cursor-pointer list-none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Faint contour lines behind the hero, like a trail map. */
+  .bg-contours {
+    background-image: radial-gradient(
+        ellipse at 85% -10%,
+        hsl(var(--blaze) / 0.12),
+        transparent 55%
+      ),
+      repeating-radial-gradient(
+        ellipse at 90% 0%,
+        transparent 0 22px,
+        hsl(var(--foreground) / 0.045) 22px 23px
+      );
   }
 }

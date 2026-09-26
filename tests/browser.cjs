@@ -73,7 +73,7 @@ const path = require('node:path');
     await page.getByRole('button', { name: 'Export visible issues' }).click();
     assert.match(
       (await downloaded).suggestedFilename(),
-      /^issue-desk-visible-\d{4}-\d{2}-\d{2}\.json$/,
+      /^cairn-visible-\d{4}-\d{2}-\d{2}\.json$/,
     );
     await page.getByText('Restore a backup', { exact: true }).click();
     await page.getByLabel('Backup JSON', { exact: true }).fill(
@@ -122,7 +122,7 @@ const path = require('node:path');
     await page.getByText('Reusable views', { exact: true }).click();
     const screenshots = process.env.SCREENSHOT_DIR || '/tmp';
     await page.screenshot({
-      path: path.join(screenshots, 'issue-desk-2025-desktop.png'),
+      path: path.join(screenshots, 'cairn-2025-desktop.png'),
       fullPage: true,
     });
     await page.setViewportSize({ width: 375, height: 812 });
@@ -132,7 +132,7 @@ const path = require('node:path');
       ),
     );
     await page.screenshot({
-      path: path.join(screenshots, 'issue-desk-2025-mobile.png'),
+      path: path.join(screenshots, 'cairn-2025-mobile.png'),
       fullPage: true,
     });
     await page.getByLabel('Title', { exact: true }).fill('x'.repeat(100));
