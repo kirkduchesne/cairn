@@ -71,12 +71,21 @@ export function persistViews(
   return raw;
 }
 
+export function suffixViewName(value: string, suffix: string): string {
+  let prefix = '';
+  for (const character of value.trim()) {
+    if (prefix.length + character.length + suffix.length > 40) break;
+    prefix += character;
+  }
+  return prefix + suffix;
+}
+
 export function copyView(view: SavedView, current: SavedView[]): SavedView {
   let number = 1;
   const names = new Set(current.map((item) => item.name.trim().toLowerCase()));
   let name = '';
   do {
-    name = `${view.name.slice(0, 30)} copy ${number++}`;
+    name = suffixViewName(view.name, ` copy ${number++}`);
   } while (names.has(name.trim().toLowerCase()));
   const ids = new Set(current.map((item) => item.id));
   let id = `copy-${number}`;

@@ -49,11 +49,51 @@ test('rejects oversized or malformed view backups and preserves snapshot conflic
 });
 
 test('renames padded and differently cased imported names consistently', () => {
-  const incoming = parseViewBackup(serializeViews([{ ...view, name: ' Daily ' }]));
+  const incoming = parseViewBackup(
+    serializeViews([{ ...view, name: ' Daily ' }]),
+  );
   const result = mergeViews([view], incoming);
   expect(result[0]).toEqual(view);
   expect(result[1].name.trim().toLowerCase()).not.toBe('daily');
   expect(parseViewBackup(serializeViews(result))).toEqual(result);
   const caseResult = mergeViews([view], [{ ...view, name: 'DAILY' }]);
   expect(caseResult[1].name.toLowerCase()).not.toBe('daily');
+});
+
+import { copyView, parseViews, type SavedView } from './views';
+
+test('copies and imports Unicode names without splitting characters or exceeding forty units', () => {
+  for (const name of [
+    '😀'.repeat(20),
+    'a' + '😀'.repeat(19) + 'b',
+    'x'.repeat(27) + '😀'.repeat(6) + 'y',
+    'x'.repeat(40),
+  ]) {
+    const original = { ...view, name };
+    let copies: SavedView[] = [original];
+    let imports: SavedView[] = [original];
+    for (let index = 0; index < 10; index += 1) {
+      const copy = copyView(original, copies);
+      copies = [...copies, copy];
+      imports = mergeViews(imports, [original]);
+      for (const result of [copy, imports[imports.length - 1]]) {
+        expect(result.name.length).toBeLessThanOrEqual(40);
+        expect(
+          Array.from(result.name).every(
+            (character) =>
+              character.length === 2 || !/[\uD800-\uDFFF]/.test(character),
+          ),
+        ).toBe(true);
+      }
+      expect(parseViews(JSON.stringify(copies))).toEqual(copies);
+      expect(parseViewBackup(serializeViews(imports))).toEqual(imports);
+    }
+    expect(copies[10].name.endsWith(' copy 10')).toBe(true);
+    expect(imports[10].name.endsWith(' imported 10')).toBe(true);
+    expect(new Set(copies.map((item) => item.name)).size).toBe(11);
+    expect(new Set(imports.map((item) => item.name)).size).toBe(11);
+  }
+  expect(() =>
+    parseViews(JSON.stringify([{ ...view, name: '😀'.repeat(40) }])),
+  ).toThrow();
 });

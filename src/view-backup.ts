@@ -1,4 +1,4 @@
-import { SavedView, parseViews } from './views';
+import { SavedView, parseViews, suffixViewName } from './views';
 export const viewBackupLimit = 100_000;
 export function parseViewBackup(raw: string): SavedView[] {
   if (raw.length > viewBackupLimit)
@@ -43,9 +43,11 @@ export function mergeViews(
     let id = view.id;
     let suffix = 1;
     while (
-      result.some((item) => item.name.trim().toLowerCase() === name.trim().toLowerCase())
+      result.some(
+        (item) => item.name.trim().toLowerCase() === name.trim().toLowerCase(),
+      )
     ) {
-      name = `${view.name.slice(0, 28)} imported ${suffix++}`;
+      name = suffixViewName(view.name, ` imported ${suffix++}`);
     }
     suffix = 1;
     while (result.some((item) => item.id === id)) id = `imported-${suffix++}`;
