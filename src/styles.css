@@ -14,6 +14,9 @@
   button[type] {
     @apply rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700;
   }
+  button:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
   :focus-visible {
     @apply outline outline-2 outline-offset-2 outline-indigo-600;
   }

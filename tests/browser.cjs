@@ -76,28 +76,26 @@ const path = require('node:path');
       /^issue-desk-visible-\d{4}-\d{2}-\d{2}\.json$/,
     );
     await page.getByText('Restore a backup', { exact: true }).click();
-    await page
-      .getByLabel('Backup JSON')
-      .fill(
-        JSON.stringify({
-          version: 1,
-          issues: [
-            {
-              id: 'imported',
-              title: 'Verify the backup',
-              notes: '',
-              status: 'Open',
-            },
-          ],
-        }),
-      );
+    await page.getByLabel('Backup JSON', { exact: true }).fill(
+      JSON.stringify({
+        version: 1,
+        issues: [
+          {
+            id: 'imported',
+            title: 'Verify the backup',
+            notes: '',
+            status: 'Open',
+          },
+        ],
+      }),
+    );
     await page.getByRole('button', { name: 'Preview backup' }).click();
     await page.getByRole('button', { name: 'Cancel import' }).click();
     await page.getByRole('button', { name: 'Preview backup' }).click();
     await page.getByRole('button', { name: 'Import new issues' }).click();
     assert.equal(
       await page
-        .getByLabel('Backup JSON')
+        .getByLabel('Backup JSON', { exact: true })
         .evaluate((element) => element === document.activeElement),
       true,
     );
