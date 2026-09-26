@@ -4,7 +4,7 @@ import { summarize } from './summary';
 export function resultSummary(issues: Issue[], query: Query): string {
   const counts = summarize(issues);
   return [
-    'Issue Desk result summary',
+    'Cairn result summary',
     `Scope: ${query.scope ?? 'Active'}`,
     `Status: ${query.status}; priority: ${query.priority}; tag: ${query.tag || 'All'}`,
     `Search: ${query.text || 'None'}`,

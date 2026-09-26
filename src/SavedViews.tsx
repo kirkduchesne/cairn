@@ -1,3 +1,20 @@
+import {
+  ArrowDown,
+  ArrowUp,
+  Copy,
+  Download,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+  TriangleAlert,
+  Upload,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { NativeSelect } from '@/components/ui/native-select';
+import { Textarea } from '@/components/ui/textarea';
 import { downloadViews, parseViewBackup, mergeViews } from './view-backup';
 import { useRef, useState } from 'react';
 import { Query } from './query';
@@ -40,230 +57,300 @@ export function SavedViews({
   }
   const changed = active && queryIdentity(active.query) !== queryIdentity(query);
   return (
-    <section
-      className="mb-5 space-y-3 rounded bg-white p-4"
-      aria-label="Saved views"
-    >
-      <h2 className="font-semibold">Saved views</h2>
-      <fieldset disabled={Boolean(initial.error)} className="space-y-3">
-        <button
-          type="button"
-          onClick={() => {
-            try {
-              downloadViews(views);
-              setMessage(
-                `Views download requested. Action ${++saveNumber.current}.`,
-              );
-            } catch {
-              setMessage(
-                `Views download failed. Action ${++saveNumber.current}.`,
-              );
-            }
-          }}
-        >
-          Export views
-        </button>
-        <details>
-          <summary>Import saved views</summary>
-          <label>
-            Views backup JSON
-            <textarea
-              value={backupText}
-              maxLength={100000}
+    <section className="space-y-4" aria-label="Saved views">
+      <h2 className="sr-only">Saved views</h2>
+      <fieldset
+        disabled={Boolean(initial.error)}
+        className="min-w-0 space-y-4 disabled:opacity-90"
+      >
+        <div className="relative">
+          <Label>
+            Choose saved view
+            <NativeSelect
+              value={selected}
               onChange={(event) => {
-                setBackupText(event.target.value);
-                setIncoming(null);
+                const view = views.find(
+                  (item) => item.id === event.target.value,
+                );
+                if (view) {
+                  setSelected(view.id);
+                  onApply(view.query);
+                }
               }}
+            >
+              <option value="" disabled>
+                Choose a view
+              </option>
+              {views.map((view) => (
+                <option key={view.id} value={view.id}>
+                  {view.name}
+                </option>
+              ))}
+            </NativeSelect>
+          </Label>
+          <p
+            aria-hidden="true"
+            className="absolute right-0 top-0 text-xs leading-none tabular-nums text-muted-foreground"
+          >
+            {views.length} / 12
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>
+            View name
+            <Input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              maxLength={40}
             />
-          </label>
-          <button
-            type="button"
+          </Label>
+          <Button
+            variant="blaze"
+            size="sm"
+            className="w-full"
+            onClick={() => {
+              if (!name.trim()) {
+                setMessage('Enter a view name.');
+                return;
+              }
+              const view = {
+                id:
+                  Date.now().toString(36) + Math.random().toString(36).slice(2),
+                name: name.trim(),
+                query,
+              };
+              if (save([...views, view])) setName('');
+            }}
+          >
+            <Plus aria-hidden="true" />
+            Save new view
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(11.5rem,1fr))] gap-1.5 border-t pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="justify-start"
+            disabled={!active || views.length >= 12}
+            onClick={() => {
+              if (active) save([...views, copyView(active, views)]);
+            }}
+          >
+            <Copy aria-hidden="true" />
+            Duplicate selected view
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="justify-start"
+            disabled={!selected || !changed}
+            onClick={() =>
+              save(
+                views.map((view) =>
+                  view.id === selected ? { ...view, query } : view,
+                ),
+              )
+            }
+          >
+            <RefreshCw aria-hidden="true" />
+            Update selected view
+          </Button>
+          {([-1, 1] as const).map((direction) => {
+            const index = views.findIndex((view) => view.id === selected);
+            return (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start"
+                key={direction}
+                disabled={
+                  index < 0 ||
+                  index + direction < 0 ||
+                  index + direction >= views.length
+                }
+                onClick={() => {
+                  const next = [...views];
+                  [next[index], next[index + direction]] = [
+                    next[index + direction],
+                    next[index],
+                  ];
+                  save(next);
+                }}
+              >
+                {direction === -1 ? (
+                  <ArrowUp aria-hidden="true" />
+                ) : (
+                  <ArrowDown aria-hidden="true" />
+                )}
+                Move view {direction === -1 ? 'up' : 'down'}
+              </Button>
+            );
+          })}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="justify-start"
+            disabled={!selected}
+            onClick={() => {
+              if (!name.trim()) {
+                setMessage('Enter the new view name.');
+                return;
+              }
+              if (
+                save(
+                  views.map((view) =>
+                    view.id === selected
+                      ? { ...view, name: name.trim() }
+                      : view,
+                  ),
+                )
+              )
+                setName('');
+            }}
+          >
+            <Pencil aria-hidden="true" />
+            Rename selected view
+          </Button>
+          <Button
+            variant="ghost-destructive"
+            size="sm"
+            className="justify-start"
+            disabled={!selected}
+            onClick={() => {
+              if (
+                !window.confirm(
+                  'Delete this saved view? Issues will remain unchanged.',
+                )
+              )
+                return;
+              if (save(views.filter((view) => view.id !== selected)))
+                setSelected('');
+            }}
+          >
+            <Trash2 aria-hidden="true" />
+            Delete selected view
+          </Button>
+        </div>
+
+        <div className="space-y-2 border-t pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
             onClick={() => {
               try {
-                const parsed = parseViewBackup(backupText);
-                mergeViews(views, parsed);
-                setIncoming(parsed);
+                downloadViews(views);
                 setMessage(
-                  `Preview: add ${parsed.length} views. Conflicting names and IDs receive new names. Existing views stay unchanged.`,
+                  `Views download requested. Action ${++saveNumber.current}.`,
                 );
-              } catch (error) {
-                setIncoming(null);
+              } catch {
                 setMessage(
-                  error instanceof Error
-                    ? error.message
-                    : 'Invalid views backup.',
+                  `Views download failed. Action ${++saveNumber.current}.`,
                 );
               }
             }}
           >
-            Preview views backup
-          </button>
-          {incoming && (
-            <div>
-              <p>{incoming.length} views ready to add.</p>
-              <button
-                type="button"
+            <Download aria-hidden="true" />
+            Export views
+          </Button>
+          <details className="group/import rounded-md border border-dashed bg-muted/40">
+            <summary className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground">
+              <Upload aria-hidden="true" className="size-3.5 shrink-0" />
+              Import saved views
+            </summary>
+            <div className="space-y-2 border-t border-dashed px-3 pb-3 pt-3">
+              <Label>
+                Views backup JSON
+                <Textarea
+                  className="min-h-[96px] font-mono text-xs"
+                  value={backupText}
+                  maxLength={100000}
+                  onChange={(event) => {
+                    setBackupText(event.target.value);
+                    setIncoming(null);
+                  }}
+                />
+              </Label>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
                 onClick={() => {
                   try {
-                    if (save(mergeViews(views, incoming))) {
-                      setIncoming(null);
-                      setBackupText('');
-                    }
+                    const parsed = parseViewBackup(backupText);
+                    mergeViews(views, parsed);
+                    setIncoming(parsed);
+                    setMessage(
+                      `Preview: add ${parsed.length} views. Conflicting names and IDs receive new names. Existing views stay unchanged.`,
+                    );
                   } catch (error) {
+                    setIncoming(null);
                     setMessage(
                       error instanceof Error
                         ? error.message
-                        : 'Views could not be imported.',
+                        : 'Invalid views backup.',
                     );
                   }
                 }}
               >
-                Import new views
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIncoming(null);
-                  setMessage('View import cancelled.');
-                }}
-              >
-                Cancel view import
-              </button>
+                Preview views backup
+              </Button>
+              {incoming && (
+                <div className="space-y-2 rounded-md border border-moss/20 bg-moss-soft p-2.5">
+                  <p className="text-xs font-medium text-moss">
+                    {incoming.length} views ready to add.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        try {
+                          if (save(mergeViews(views, incoming))) {
+                            setIncoming(null);
+                            setBackupText('');
+                          }
+                        } catch (error) {
+                          setMessage(
+                            error instanceof Error
+                              ? error.message
+                              : 'Views could not be imported.',
+                          );
+                        }
+                      }}
+                    >
+                      Import new views
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        setIncoming(null);
+                        setMessage('View import cancelled.');
+                      }}
+                    >
+                      Cancel view import
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </details>
-        <label>
-          Choose saved view
-          <select
-            value={selected}
-            onChange={(event) => {
-              const view = views.find((item) => item.id === event.target.value);
-              if (view) {
-                setSelected(view.id);
-                onApply(view.query);
-              }
-            }}
-          >
-            <option value="" disabled>
-              Choose a view
-            </option>
-            {views.map((view) => (
-              <option key={view.id} value={view.id}>
-                {view.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          View name
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            maxLength={40}
-          />
-        </label>
-        <button
-          type="button"
-          onClick={() => {
-            if (!name.trim()) {
-              setMessage('Enter a view name.');
-              return;
-            }
-            const view = {
-              id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-              name: name.trim(),
-              query,
-            };
-            if (save([...views, view])) setName('');
-          }}
-        >
-          Save new view
-        </button>
-        <button
-          type="button"
-          disabled={!active || views.length >= 12}
-          onClick={() => {
-            if (active) save([...views, copyView(active, views)]);
-          }}
-        >
-          Duplicate selected view
-        </button>
-        {([-1, 1] as const).map((direction) => {
-          const index = views.findIndex((view) => view.id === selected);
-          return (
-            <button
-              type="button"
-              key={direction}
-              disabled={
-                index < 0 ||
-                index + direction < 0 ||
-                index + direction >= views.length
-              }
-              onClick={() => {
-                const next = [...views];
-                [next[index], next[index + direction]] = [
-                  next[index + direction],
-                  next[index],
-                ];
-                save(next);
-              }}
-            >
-              Move view {direction === -1 ? 'up' : 'down'}
-            </button>
-          );
-        })}
-        <button
-          type="button"
-          disabled={!selected}
-          onClick={() => {
-            if (!name.trim()) {
-              setMessage('Enter the new view name.');
-              return;
-            }
-            if (
-              save(
-                views.map((view) =>
-                  view.id === selected ? { ...view, name: name.trim() } : view,
-                ),
-              )
-            )
-              setName('');
-          }}
-        >
-          Rename selected view
-        </button>
-        <button
-          type="button"
-          disabled={!selected}
-          onClick={() => {
-            if (
-              !window.confirm(
-                'Delete this saved view? Issues will remain unchanged.',
-              )
-            )
-              return;
-            if (save(views.filter((view) => view.id !== selected)))
-              setSelected('');
-          }}
-        >
-          Delete selected view
-        </button>
-        <button
-          type="button"
-          disabled={!selected || !changed}
-          onClick={() =>
-            save(
-              views.map((view) =>
-                view.id === selected ? { ...view, query } : view,
-              ),
-            )
-          }
-        >
-          Update selected view
-        </button>
+          </details>
+        </div>
       </fieldset>
-      {changed && <p>Current filters differ from the selected view.</p>}
-      <p role="status">{message}</p>
+      {changed && (
+        <p className="flex items-start gap-2 rounded-md border border-ochre/20 bg-ochre-soft px-3 py-2 text-xs font-medium text-ochre">
+          <TriangleAlert aria-hidden="true" className="mt-px size-3.5 shrink-0" />
+          Current filters differ from the selected view.
+        </p>
+      )}
+      <p role="status" className="min-h-4 text-xs text-muted-foreground">
+        {message}
+      </p>
     </section>
   );
 }

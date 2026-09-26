@@ -19,7 +19,7 @@ test('filtered backup contains only results and leaves source intact', () => {
   ).toEqual(['a']);
   expect(rows).toHaveLength(2);
   expect(backupFilename('visible', new Date('2025-05-20T23:30:00-04:00'))).toBe(
-    'issue-desk-visible-2025-05-21.json',
+    'cairn-visible-2025-05-21.json',
   );
 });
 test('creation failures propagate without changing input', () => {

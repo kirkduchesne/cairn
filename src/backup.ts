@@ -13,7 +13,7 @@ export function parseBackup(raw: string): Issue[] {
     throw new Error('Backup exceeds five million characters.');
   const data = JSON.parse(raw);
   if (!data || data.version !== 1 || !Array.isArray(data.issues)) {
-    throw new Error('Choose an Issue Desk version 1 backup.');
+    throw new Error('Choose a Cairn version 1 backup.');
   }
   if (data.issues.length > 500) throw new Error('Backup exceeds 500 issues.');
   return parseIssues(JSON.stringify(data.issues));
@@ -23,7 +23,7 @@ export function backupFilename(
   scope: 'all' | 'visible',
   now = new Date(),
 ): string {
-  return `issue-desk-${scope}-${now.toISOString().slice(0, 10)}.json`;
+  return `cairn-${scope}-${now.toISOString().slice(0, 10)}.json`;
 }
 
 export function downloadBackup(
