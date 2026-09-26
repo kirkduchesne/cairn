@@ -96,7 +96,10 @@ test('leaves corrupt storage untouched and disables mutation', () => {
   expect(screen.getByRole('alert').textContent).toContain(
     'Changes are disabled',
   );
-  expect(document.querySelector('fieldset')!.disabled).toBe(true);
+  expect(
+    (screen.getByLabelText('Title').closest('fieldset') as HTMLFieldSetElement)
+      .disabled,
+  ).toBe(true);
   expect(localStorage.getItem(storageKey)).toBe('{broken');
 });
 
@@ -146,6 +149,7 @@ test('imports only new ids and rejects invalid backups', () => {
       value: JSON.stringify({ version: 1, issues: [...existing, imported] }),
     },
   });
+  fireEvent.click(screen.getByText('Preview backup'));
   fireEvent.click(screen.getByText('Import new issues'));
   expect(screen.getByText('Imported task')).toBeTruthy();
   expect(
@@ -154,7 +158,7 @@ test('imports only new ids and rejects invalid backups', () => {
   fireEvent.change(screen.getByLabelText('Backup JSON'), {
     target: { value: '{bad' },
   });
-  fireEvent.click(screen.getByText('Import new issues'));
+  fireEvent.click(screen.getByText('Preview backup'));
   expect(
     screen.getByText(
       'Backup is invalid or exceeds the list limit. Nothing was changed.',
@@ -181,6 +185,7 @@ test('focuses the title after edits and preserves failed imports', () => {
   vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
     throw new Error('quota');
   });
+  fireEvent.click(screen.getByText('Preview backup'));
   fireEvent.click(screen.getByText('Import new issues'));
   expect(
     (screen.getByLabelText('Backup JSON') as HTMLTextAreaElement).value,
@@ -220,4 +225,17 @@ test('updates the live announcement for consecutive identical actions', () => {
     fireEvent.click(screen.getByText('Save changes'));
   }
   expect(announcement.textContent).toBe('Issue updated. Action 4.');
+});
+test('keyboard shortcuts move focus without changing entered text', () => {
+  render(<App />);
+  fireEvent.change(screen.getByLabelText('Title'), {
+    target: { value: 'Draft text' },
+  });
+  fireEvent.keyDown(window, { key: 'f', altKey: true });
+  expect(document.activeElement).toBe(screen.getByLabelText('Search issues'));
+  fireEvent.keyDown(window, { key: 'n', altKey: true });
+  expect(document.activeElement).toBe(screen.getByLabelText('Title'));
+  expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe(
+    'Draft text',
+  );
 });
