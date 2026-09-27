@@ -4,7 +4,7 @@
 
 Cairn is a browser-local tracker for a small personal backlog. Tag and group
 active work, archive completed issues, reuse saved views, and keep portable
-backups. (Formerly **Issue Desk**.)
+backups.
 
 ![Cairn with a sample personal backlog](docs/preview.png)
 
@@ -108,16 +108,10 @@ port 8602; the original suite retains its 8502 default. Browser coverage include
 reload, backups, view collisions, archive/restore, keyboard focus, and 375px
 layouts. The screenshot uses nonpersonal sample issues.
 
-## Project history
+## Dependency maintenance
 
-- **2023:** Typed React issue list with local persistence.
-- **2024:** Priorities, timestamps, backups, and storage protection.
-- **2025:** Reusable views, safe batches, summaries, and previewed imports.
-- **2026:** Tags, archives, grouping, portable views, and local recovery.
+The pinned toolchain has known advisories; review and upgrade dependencies before deploying a public service.
 
-Created in September 2026 as a reconstruction using technology available in the
-assigned periods. Historical author and committer dates were intentionally
-assigned and do not establish original publication in those years. Verification
-used Node 20.19.0 and current Chrome. The unchanged dependency lock was checked
-against January 2026 registry publication dates. This period-specific toolchain
-has known advisories; upgrade it before adapting the project for a current public service.
+## Provenance
+
+Created in September 2026; earlier commit dates were intentionally assigned and do not indicate original development or publication dates.
