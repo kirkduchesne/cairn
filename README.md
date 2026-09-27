@@ -111,7 +111,3 @@ layouts. The screenshot uses nonpersonal sample issues.
 ## Dependency maintenance
 
 The pinned toolchain has known advisories; review and upgrade dependencies before deploying a public service.
-
-## Provenance
-
-Created in September 2026; earlier commit dates were intentionally assigned and do not indicate original development or publication dates.
