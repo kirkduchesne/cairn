@@ -12,8 +12,9 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
-          node-version: 20.18.1
+          node-version-file: '.nvmrc'
           cache: npm
+      - run: node --version && npm --version
       - run: npm ci
       - run: npm test
       - run: npm run build

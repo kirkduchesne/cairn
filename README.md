@@ -29,9 +29,12 @@ top.
 
 ## Run
 
-Use Node 20 and npm:
+Use Node 22.23.4 (the minimum supported version) and its bundled npm.
+The `.nvmrc` pin is shared with CI:
 
 ```sh
+nvm install
+nvm use
 npm ci
 npm run dev
 npm test
@@ -39,7 +42,7 @@ npm run build
 ```
 
 The development server binds to loopback. No account, backend, or external
-service is needed. React 18.3, TypeScript 5.8, Vite 6.2, and Tailwind 3.4 are
+service is needed. React 18.3, TypeScript 5.8, Vite 6.4, and Tailwind 3.4 are
 pinned with their transitive dependencies, as are the shadcn/ui support
 packages and fonts.
 
@@ -110,4 +113,8 @@ layouts. The screenshot uses nonpersonal sample issues.
 
 ## Dependency maintenance
 
-The pinned toolchain has known advisories; review and upgrade dependencies before deploying a public service.
+The pinned development toolchain still has known advisories, tracked in
+[issue #9](https://github.com/kirkduchesne/cairn/issues/9). The Node 22.23.4
+baseline and compatible dependency security updates do not resolve every
+Tailwind/Vitest advisory or certify production safety. Review and upgrade
+dependencies before deploying a public service.
